@@ -145,6 +145,10 @@ QOI_COLOR {
 	u8 a;           // alpha value if has_a == 1: 0..255
 }
 
+The byte stream is padded with 4 zero bytes. Size the longest chunk we can
+encounter is 5 bytes (QOI_COLOR with RGBA set), with this padding we just have 
+to check for an overrun once per decode loop iteration.
+
 */
 
 
@@ -231,6 +235,7 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 #define QOI_MASK_4  0xf0 // 11110000
 
 #define QOI_COLOR_HASH(C) (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a)
+#define QOI_PADDING 4
 
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
@@ -362,7 +367,7 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		px_prev = px;
 	}
 
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < QOI_PADDING; i++) {
 		bytes[p++] = 0;
 	}
 
@@ -394,16 +399,16 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 
 	const unsigned char *bytes = (const unsigned char *)data + sizeof(qoi_header_t);
 	
-	int data_len = header->size;
+	int data_len = header->size - QOI_PADDING;
 	qoi_rgba_t px = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t index[64] = {0};
 
 	int run = 0;
-	for (int px_pos = 0, p = 0; px_pos < px_len && p < data_len; px_pos += channels) {		
+	for (int px_pos = 0, p = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
 			run--;
 		}
-		else {
+		else if (p < data_len) {
 			int b1 = bytes[p++];
 
 			if ((b1 & QOI_MASK_2) == QOI_INDEX) {
