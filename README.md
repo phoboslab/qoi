@@ -7,6 +7,8 @@ the documentation.
 
 More info at https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compression
 
+⚠️ Please note that this library is not yet ready to deal with untrusted input.
+
 ## Why?
 
 Compared to stb_image and stb_image_write QOI offers 20x-50x faster encoding,
