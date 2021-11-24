@@ -4,7 +4,7 @@ Simple benchmark suite for png, stbi and qoi
 
 Requires libpng, "stb_image.h" and "stb_image_write.h"
 Compile with: 
-	gcc qoibench.c -std=gnu99 -O3 -o qoibench 
+	gcc qoibench.c -std=gnu99 -lpng -O3 -o qoibench 
 
 Dominic Szablewski - https://phoboslab.org
 
