@@ -249,7 +249,7 @@ typedef struct {
 	unsigned int size;
 } qoi_header_t;
 
-const static qoi_magic_t qoi_magic = {.chars = {'q','o','i','f'}};
+static const qoi_magic_t qoi_magic = {.chars = {'q','o','i','f'}};
 
 void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	if (
@@ -372,7 +372,7 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 }
 
 void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channels) {
-	if (size < sizeof(qoi_header_t)) {
+	if ((size_t)size < sizeof(qoi_header_t)) {
 		return NULL;
 	}
 
@@ -380,7 +380,7 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 	if (
 		channels < 3 || channels > 4 ||
 		!header->width || !header->height ||
-		header->size + sizeof(qoi_header_t) != size ||
+		header->size + sizeof(qoi_header_t) != (size_t)size ||
 		header->magic.v != qoi_magic.v
 	) {
 		return NULL;
