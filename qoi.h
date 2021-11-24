@@ -236,6 +236,10 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 
 #define QOI_COLOR_HASH(C) (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a)
 #define QOI_PADDING 4
+#ifndef QOI_MAX_ALLOC
+// 1 GB max image size
+#define QOI_MAX_ALLOC (1 * 1024 * 1024 * 1024)
+#endif
 
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
@@ -268,6 +272,9 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 
 	int max_size = w * h * (channels + 1) + sizeof(qoi_header_t) + 4;
 	int p = 0;
+	if (max_size > QOI_MAX_ALLOC || max_size < 0) {
+		return NULL;
+	}
 	unsigned char *bytes = QOI_MALLOC(max_size);
 	if (!bytes) {
 		return NULL;
@@ -392,6 +399,9 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 	}
 
 	int px_len = header->width * header->height * channels;
+	if (px_len > QOI_MAX_ALLOC || px_len < 0) {
+		return NULL;
+	}
 	unsigned char *pixels = QOI_MALLOC(px_len);
 	if (!pixels) {
 		return NULL;
@@ -497,6 +507,9 @@ void *qoi_read(const char *filename, int *out_w, int *out_h, int channels) {
 	int size = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
+	if (size > QOI_MAX_ALLOC || size < 0) {
+		return NULL;
+	}
 	void *data = QOI_MALLOC(size);
 	if (!data) {
 		return NULL;
