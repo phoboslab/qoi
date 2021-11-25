@@ -106,26 +106,26 @@ QOI_RUN_8 {
 	u8 run  :  5;   // 5-bit run-length repeating the previous pixel: 1..32
 }
 
-QOI_RUN16 {
+QOI_RUN_16 {
 	u8 tag  :  3;   // b011
 	u16 run : 13;   // 13-bit run-length repeating the previous pixel: 33..8224
 }
 
-QOI_DIFF8 {
+QOI_DIFF_8 {
 	u8 tag  :  2;   // b10
 	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
 	u8 dg   :  2;   // 2-bit green channel difference: -1..2
 	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
 }
 
-QOI_DIFF16 {
+QOI_DIFF_16 {
 	u8 tag  :  3;   // b110
 	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
 	u8 dg   :  4;   // 4-bit green channel difference:  -7.. 8
 	u8 db   :  4;   // 4-bit  blue channel difference:  -7.. 8
 }
 
-QOI_DIFF24 {
+QOI_DIFF_24 {
 	u8 tag  :  4;   // b1110
 	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
 	u8 dg   :  5;   // 5-bit green channel difference: -15..16
