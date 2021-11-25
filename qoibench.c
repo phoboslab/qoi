@@ -43,6 +43,10 @@ SOFTWARE.
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
+#define WUFFS_IMPLEMENTATION
+#define WUFFS_CONFIG__STATIC_FUNCTIONS
+#include "the/path/to/github.com/google/wuffs/release/c/wuffs-v0.3.c"
+
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
@@ -267,6 +271,73 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 
 
 // -----------------------------------------------------------------------------
+// Wuffs codec
+
+void *wuffs_decode(void *data, int size) {
+	wuffs_png__decoder *dec = wuffs_png__decoder__alloc();
+	if (!dec) {
+		ERROR("wuffs_png__decoder__alloc");
+	}
+	wuffs_base__image_config ic;
+	wuffs_base__io_buffer src = wuffs_base__ptr_u8__reader(data, size, true);
+	wuffs_base__status status =
+			wuffs_png__decoder__decode_image_config(dec, &ic, &src);
+	if (status.repr) {
+		ERROR("wuffs_png__decoder__decode_image_config: %s", status.repr);
+	}
+	uint32_t w = wuffs_base__pixel_config__width(&ic.pixcfg);
+	uint32_t h = wuffs_base__pixel_config__height(&ic.pixcfg);
+
+	// Override the image's native pixel format to be RGBA_NONPREMUL.
+	wuffs_base__pixel_config__set(&ic.pixcfg,
+			WUFFS_BASE__PIXEL_FORMAT__RGBA_NONPREMUL,
+			WUFFS_BASE__PIXEL_SUBSAMPLING__NONE, w, h);
+
+	// Configure the work buffer.
+	uint64_t workbuf_len = wuffs_png__decoder__workbuf_len(dec).max_incl;
+	if (workbuf_len > SIZE_MAX) {
+		ERROR("workbuf_len is too large");
+	}
+	wuffs_base__slice_u8 workbuf_slice =
+			wuffs_base__make_slice_u8(
+			malloc((size_t)workbuf_len), (size_t)workbuf_len);
+	if (!workbuf_slice.ptr) {
+		ERROR("could not allocate workbuf");
+	}
+
+	// Configure the pixel buffer (at 4 bytes per pixel).
+	uint64_t num_pixels = ((uint64_t)w) * ((uint64_t)h);
+	if (num_pixels > (SIZE_MAX / 4)) {
+		ERROR("num_pixels is too large");
+	}
+	wuffs_base__slice_u8 pixbuf_slice =
+			wuffs_base__make_slice_u8(
+			malloc((size_t)(num_pixels * 4)), (size_t)(num_pixels * 4));
+	if (!pixbuf_slice.ptr) {
+		ERROR("could not allocate pixbuf");
+	}
+	wuffs_base__pixel_buffer pb;
+	status = wuffs_base__pixel_buffer__set_from_slice(
+			&pb, &ic.pixcfg, pixbuf_slice);
+	if (status.repr) {
+		ERROR("wuffs_base__pixel_buffer__set_from_slice: %s", status.repr);
+	}
+
+	// Decode the pixels.
+	status = wuffs_png__decoder__decode_frame(
+			dec, &pb, &src, WUFFS_BASE__PIXEL_BLEND__SRC, workbuf_slice, NULL);
+	if (status.repr) {
+		ERROR("wuffs_png__decoder__decode_frame: %s", status.repr);
+	}
+
+	free(pixbuf_slice.ptr);
+	free(workbuf_slice.ptr);
+	free(dec);
+	return NULL;
+}
+
+
+// -----------------------------------------------------------------------------
 // stb_image encode callback
 
 void stbi_write_callback(void *context, void *data, int size) {
@@ -320,6 +391,7 @@ typedef struct {
 	int h;
 	benchmark_lib_result_t libpng;
 	benchmark_lib_result_t stbi;
+	benchmark_lib_result_t wuffs;
 	benchmark_lib_result_t qoi;
 } benchmark_result_t;
 
@@ -376,6 +448,10 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 		free(dec_p);
 	});
 
+	BENCHMARK_FN(runs, res.wuffs.decode_time, {
+		wuffs_decode(encoded_png, encoded_png_size);
+	});
+
 	BENCHMARK_FN(runs, res.qoi.decode_time, {
 		int dec_w, dec_h;
 		void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &dec_w, &dec_h, 4);
@@ -396,6 +472,10 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 		int enc_size = 0;
 		stbi_write_png_to_func(stbi_write_callback, &enc_size, w, h, 4, pixels, 0);
 		res.stbi.size = enc_size;
+	});
+
+	BENCHMARK_FN(runs, res.wuffs.encode_time, {
+		// Wuffs' PNG codec is only decode, not encode, for now.
 	});
 
 	BENCHMARK_FN(runs, res.qoi.encode_time, {
@@ -431,6 +511,14 @@ void benchmark_print_result(const char *head, benchmark_result_t res) {
 		(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
 		(res.stbi.encode_time > 0 ? px / ((double)res.stbi.encode_time/1000.0) : 0),
 		res.stbi.size/1024
+	);
+	printf(
+		"wuffs:   %8.1f    %8s      %8.2f      %8s  %8s\n",
+		(double)res.wuffs.decode_time/1000000.0,
+		"n/a",
+		(res.wuffs.decode_time > 0 ? px / ((double)res.wuffs.decode_time/1000.0) : 0),
+		"n/a",
+		"n/a"
 	);
 	printf(
 		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", 
@@ -489,6 +577,9 @@ int main(int argc, char **argv) {
 		totals.stbi.encode_time += res.stbi.encode_time;
 		totals.stbi.decode_time += res.stbi.decode_time;
 		totals.stbi.size += res.stbi.size;
+		totals.wuffs.encode_time += res.wuffs.encode_time;
+		totals.wuffs.decode_time += res.wuffs.decode_time;
+		totals.wuffs.size += res.wuffs.size;
 		totals.qoi.encode_time += res.qoi.encode_time;
 		totals.qoi.decode_time += res.qoi.decode_time;
 		totals.qoi.size += res.qoi.size;
@@ -502,6 +593,9 @@ int main(int argc, char **argv) {
 	totals.stbi.encode_time /= i;
 	totals.stbi.decode_time /= i;
 	totals.stbi.size /= i;
+	totals.wuffs.encode_time /= i;
+	totals.wuffs.decode_time /= i;
+	totals.wuffs.size /= i;
 	totals.qoi.encode_time /= i;
 	totals.qoi.decode_time /= i;
 	totals.qoi.size /= i;
