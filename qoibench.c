@@ -467,11 +467,12 @@ int main(int argc, char **argv) {
 
 	printf("## Benchmarking %s/*.png -- %d runs\n\n", argv[2], runs);
 	struct dirent *file;
-	int i;
-	for (i = 0; dir && (file = readdir(dir)) != NULL; i++) {
+	int count = 0;
+	for (int i = 0; dir && (file = readdir(dir)) != NULL; i++) {
 		if (strcmp(file->d_name + strlen(file->d_name) - 4, ".png") != 0) {
 			continue;
 		}
+		count++;
 
 		char *file_path = malloc(strlen(file->d_name) + strlen(argv[2])+8);
 		sprintf(file_path, "%s/%s", argv[2], file->d_name);
@@ -495,16 +496,16 @@ int main(int argc, char **argv) {
 	}
 	closedir(dir);
 
-	totals.px /= i;
-	totals.libpng.encode_time /= i;
-	totals.libpng.decode_time /= i;
-	totals.libpng.size /= i;
-	totals.stbi.encode_time /= i;
-	totals.stbi.decode_time /= i;
-	totals.stbi.size /= i;
-	totals.qoi.encode_time /= i;
-	totals.qoi.decode_time /= i;
-	totals.qoi.size /= i;
+	totals.px /= count;
+	totals.libpng.encode_time /= count;
+	totals.libpng.decode_time /= count;
+	totals.libpng.size /= count;
+	totals.stbi.encode_time /= count;
+	totals.stbi.decode_time /= count;
+	totals.stbi.size /= count;
+	totals.qoi.encode_time /= count;
+	totals.qoi.decode_time /= count;
+	totals.qoi.size /= count;
 
 	benchmark_print_result("Totals (AVG)", totals);
 

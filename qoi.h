@@ -72,13 +72,13 @@ you can define QOI_MALLOC and QOI_FREE before including this library.
 
 -- Data Format
 
-A QOI file has the following header, followed by any number of data "chunks".
+A QOI file has a 12 byte header, followed by any number of data "chunks".
 
 struct qoi_header_t {
 	char [4];              // magic bytes "qoif"
-	unsigned short width;  // image width in pixels
-	unsigned short height; // image height in pixels
-	unsigned int size;     // number of data bytes following this header
+	unsigned short width;  // image width in pixels (BE)
+	unsigned short height; // image height in pixels (BE)
+	unsigned int size;     // number of data bytes following this header (BE)
 };
 
 The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
@@ -106,26 +106,26 @@ QOI_RUN_8 {
 	u8 run  :  5;   // 5-bit run-length repeating the previous pixel: 1..32
 }
 
-QOI_RUN16 {
+QOI_RUN_16 {
 	u8 tag  :  3;   // b011
 	u16 run : 13;   // 13-bit run-length repeating the previous pixel: 33..8224
 }
 
-QOI_DIFF8 {
+QOI_DIFF_8 {
 	u8 tag  :  2;   // b10
 	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
 	u8 dg   :  2;   // 2-bit green channel difference: -1..2
 	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
 }
 
-QOI_DIFF16 {
+QOI_DIFF_16 {
 	u8 tag  :  3;   // b110
 	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
 	u8 dg   :  4;   // 4-bit green channel difference:  -7.. 8
 	u8 db   :  4;   // 4-bit  blue channel difference:  -7.. 8
 }
 
-QOI_DIFF24 {
+QOI_DIFF_24 {
 	u8 tag  :  4;   // b1110
 	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
 	u8 dg   :  5;   // 5-bit green channel difference: -15..16
@@ -235,30 +235,25 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 #define QOI_MASK_4  0xf0 // 11110000
 
 #define QOI_COLOR_HASH(C) (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a)
+#define QOI_MAGIC \
+	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
+	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
+#define QOI_HEADER_SIZE 12
 #define QOI_PADDING 4
 #ifndef QOI_MAX_ALLOC
 // 1 GB max image size
 #define QOI_MAX_ALLOC (1 * 1024 * 1024 * 1024)
 #endif
 
+#define QOI_READ_16(B, P) ((B[P++] & 0xff) << 8 | (B[P++] & 0xff))
+#define QOI_READ_32(B, P) (QOI_READ_16(B, P) << 16 | QOI_READ_16(B, P))
+#define QOI_WRITE_16(B, P, V) (B[P++] = (0xff00 & V) >> 8, B[P++] = (0xff & V))
+#define QOI_WRITE_32(B, P, V) (QOI_WRITE_16(B, P, V >> 16), QOI_WRITE_16(B, P, V))
+
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
 } qoi_rgba_t;
-
-typedef union {
-	char chars[4];
-	unsigned int v;
-} qoi_magic_t;
-
-typedef struct {
-	qoi_magic_t magic;
-	unsigned short width;
-	unsigned short height;
-	unsigned int size;
-} qoi_header_t;
-
-const static qoi_magic_t qoi_magic = {.chars = {'q','o','i','f'}};
 
 void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	if (
@@ -270,7 +265,7 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		return NULL;
 	}
 
-	int max_size = w * h * (channels + 1) + sizeof(qoi_header_t) + 4;
+	int max_size = w * h * (channels + 1) + QOI_HEADER_SIZE + QOI_PADDING;
 	int p = 0;
 	if (max_size > QOI_MAX_ALLOC || max_size < 0) {
 		return NULL;
@@ -280,13 +275,10 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		return NULL;
 	}
 
-	*(qoi_header_t *)bytes = (qoi_header_t) {
-		.magic = qoi_magic,
-		.width = w,
-		.height = h,
-		.size = 0 // will be set at the end
-	};
-	p += sizeof(qoi_header_t);
+	QOI_WRITE_32(bytes, p, QOI_MAGIC);
+	QOI_WRITE_16(bytes, p, w);
+	QOI_WRITE_16(bytes, p, h);
+	QOI_WRITE_32(bytes, p, 0); // size, will be set later
 
 	const unsigned char *pixels = (const unsigned char *)data;
 
@@ -378,47 +370,55 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		bytes[p++] = 0;
 	}
 
-	((qoi_header_t *)bytes)->size = p - sizeof(qoi_header_t);
+	int data_len = p - QOI_HEADER_SIZE;
 	*out_len = p;
+
+	p = 8;
+	QOI_WRITE_32(bytes, p, data_len);
 	return bytes;
 }
 
 void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channels) {
-	if (size < sizeof(qoi_header_t)) {
+	if (channels < 3 || channels > 4 || size < QOI_HEADER_SIZE) {
 		return NULL;
 	}
 
-	qoi_header_t *header = (qoi_header_t *)data;
+	const unsigned char *bytes = (const unsigned char *)data;
+	int p = 0;
+
+	int magic = QOI_READ_32(bytes, p);
+	int w = QOI_READ_16(bytes, p);
+	int h = QOI_READ_16(bytes, p);
+	int data_len = QOI_READ_32(bytes, p);
+
 	if (
-		channels < 3 || channels > 4 ||
-		!header->width || !header->height ||
-		header->size + sizeof(qoi_header_t) != size ||
-		header->magic.v != qoi_magic.v
+		w == 0 || h == 0 || magic != QOI_MAGIC || 
+		size != data_len + QOI_HEADER_SIZE
 	) {
 		return NULL;
 	}
 
-	int px_len = header->width * header->height * channels;
+
+	int px_len = w * h * channels;
 	if (px_len > QOI_MAX_ALLOC || px_len < 0) {
 		return NULL;
 	}
+  
 	unsigned char *pixels = QOI_MALLOC(px_len);
 	if (!pixels) {
 		return NULL;
 	}
 
-	const unsigned char *bytes = (const unsigned char *)data + sizeof(qoi_header_t);
-	
-	int data_len = header->size - QOI_PADDING;
 	qoi_rgba_t px = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t index[64] = {0};
 
 	int run = 0;
-	for (int px_pos = 0, p = 0; px_pos < px_len; px_pos += channels) {
+	int chunks_len = size - QOI_PADDING;
+	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
 			run--;
 		}
-		else if (p < data_len) {
+		else if (p < chunks_len) {
 			int b1 = bytes[p++];
 
 			if ((b1 & QOI_MASK_2) == QOI_INDEX) {
@@ -470,8 +470,8 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 		}
 	}
 
-	*out_w = header->width;
-	*out_h = header->height;
+	*out_w = w;
+	*out_h = h;
 	return pixels;
 }
 
