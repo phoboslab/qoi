@@ -1,6 +1,6 @@
 /*
 
-QOI - The “Quite OK Image” format for fast, lossless image compression
+QOI - The "Quite OK Image" format for fast, lossless image compression
 
 Dominic Szablewski - https://phoboslab.org
 
