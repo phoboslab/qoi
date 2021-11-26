@@ -241,15 +241,32 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 #define QOI_HEADER_SIZE 12
 #define QOI_PADDING 4
 
-#define QOI_READ_16(B, P) ((B[P++] & 0xff) << 8 | (B[P++] & 0xff))
-#define QOI_READ_32(B, P) (QOI_READ_16(B, P) << 16 | QOI_READ_16(B, P))
-#define QOI_WRITE_16(B, P, V) (B[P++] = (0xff00 & V) >> 8, B[P++] = (0xff & V))
-#define QOI_WRITE_32(B, P, V) (QOI_WRITE_16(B, P, V >> 16), QOI_WRITE_16(B, P, V))
-
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
 } qoi_rgba_t;
+
+void qoi_write_16(unsigned char *bytes, int *p, unsigned short v) {
+	bytes[(*p)++] = (0xff00 & v) >> 8;
+	bytes[(*p)++] = (0xff & v);
+}
+
+void qoi_write_32(unsigned char *bytes, int *p, unsigned int v) {
+	qoi_write_16(bytes, p, (v & 0xffff0000) >> 16);
+	qoi_write_16(bytes, p, (v & 0xffff));
+}
+
+unsigned int qoi_read_16(const unsigned char *bytes, int *p) {
+	unsigned int a = bytes[(*p)++];
+	unsigned int b = bytes[(*p)++];
+	return (a << 8) | b;
+}
+
+unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
+	unsigned int a = qoi_read_16(bytes, p);
+	unsigned int b = qoi_read_16(bytes, p);
+	return (a << 16) | b;
+}
 
 void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	if (
@@ -268,10 +285,10 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		return NULL;
 	}
 
-	QOI_WRITE_32(bytes, p, QOI_MAGIC);
-	QOI_WRITE_16(bytes, p, w);
-	QOI_WRITE_16(bytes, p, h);
-	QOI_WRITE_32(bytes, p, 0); // size, will be set later
+	qoi_write_32(bytes, &p, QOI_MAGIC);
+	qoi_write_16(bytes, &p, w);
+	qoi_write_16(bytes, &p, h);
+	qoi_write_32(bytes, &p, 0); // size, will be set later
 
 	const unsigned char *pixels = (const unsigned char *)data;
 
@@ -367,7 +384,7 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	*out_len = p;
 
 	p = 8;
-	QOI_WRITE_32(bytes, p, data_len);
+	qoi_write_32(bytes, &p, data_len);
 	return bytes;
 }
 
@@ -379,10 +396,10 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 	const unsigned char *bytes = (const unsigned char *)data;
 	int p = 0;
 
-	int magic = QOI_READ_32(bytes, p);
-	int w = QOI_READ_16(bytes, p);
-	int h = QOI_READ_16(bytes, p);
-	int data_len = QOI_READ_32(bytes, p);
+	int magic = qoi_read_32(bytes, &p);
+	int w = qoi_read_16(bytes, &p);
+	int h = qoi_read_16(bytes, &p);
+	int data_len = qoi_read_32(bytes, &p);
 
 	if (
 		w == 0 || h == 0 || magic != QOI_MAGIC || 
