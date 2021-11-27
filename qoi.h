@@ -45,12 +45,21 @@ than stbi_image or libpng.
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-// Load and decode a QOI image from the file system into a 32bbp RGBA buffer
-int width, height;
-void *rgba_pixels = qoi_read("image.qoi", &width, &height, 4);
+// Encode and store an RGBA buffer to the file system. The qoi_desc describes
+// the input pixel data.
+qoi_write("image_new.qoi", rgba_pixels, &(qoi_desc){
+	.width = 1920,
+	.height = 1080, 
+	.channels = 4,
+	.colorspace = QOI_SRGB
+});
 
-// Encode and store an RGBA buffer to the file system
-qoi_write("image_new.qoi", rgba_pixels, width, height, 4);
+// Load and decode a QOI image from the file system into a 32bbp RGBA buffer.
+// The qoi_desc struct will be filled with the width, height, number of channels
+// and colorspace read from the file header.
+qoi_desc desc;
+void *rgba_pixels = qoi_read("image.qoi", &desc, 4);
+
 
 
 -- Documentation
@@ -166,48 +175,75 @@ to check for an overrun once per decode loop iteration.
 extern "C" {
 #endif
 
+// A pointer to qoi_desc struct has to be supplied to all of qoi's functions. It
+// describes either the input format (for qoi_write, qoi_encode), or is filled
+// with the description read from the file header (for qoi_read, qoi_decode).
+
+// The colorspace in this qoi_desc is a bitmap with 0000rgba where a 0-bit 
+// indicates sRGB and a 1-bit indicates linear colorspace for each channel. You 
+// may use one of the predefined constants: QOI_SRGB, QOI_SRGB_LINEAR_ALPHA or 
+// QOI_LINEAR. The colorspace is purely informative. It will be saved to the
+// file header, but does not affect en-/decoding in any way.
+
+#define QOI_SRGB 0x00
+#define QOI_SRGB_LINEAR_ALPHA 0x01
+#define QOI_LINEAR 0x0f
+
+typedef struct {
+	unsigned int width;
+	unsigned int height;
+	unsigned char channels;
+	unsigned char colorspace;
+} qoi_desc;
+
 #ifndef QOI_NO_STDIO
 
-// Encode raw RGB or RGBA pixels into a QOI image write it to the file system.
-// w and h denote the the width and height of the pixel data. channels must be 
-// either 3 for RGB data or 4 for RGBA.
+// Encode raw RGB or RGBA pixels into a QOI image and write it to the file 
+// system. The qoi_desc struct must be filled with the image width, height, 
+// number of channels (3 = RGB, 4 = RGBA) and the colorspace. 
+
 // The function returns 0 on failure (invalid parameters, or fopen or malloc 
 // failed) or the number of bytes written on success.
 
-int qoi_write(const char *filename, const void *data, int w, int h, int channels);
+int qoi_write(const char *filename, const void *data, const qoi_desc *desc);
 
 
-// Read and decode a QOI image from the file system into either raw RGB 
-// (channels=3) or RGBA (channels=4) pixel data.
+// Read and decode a QOI image from the file system. If channels is 0, the
+// number of channels from the file header is used. If channels is 3 or 4 the
+// output format will be forced into this number of channels.
+
 // The function either returns NULL on failure (invalid data, or malloc or fopen
-// failed) or a pointer to the decoded pixels. On success out_w and out_h will 
-// be set to the width and height of the decoded image.
+// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
+// will be filled with the description from the file header.
+
 // The returned pixel data should be free()d after use.
 
-void *qoi_read(const char *filename, int *out_w, int *out_h, int channels);
+void *qoi_read(const char *filename, qoi_desc *desc, int channels);
 
 #endif // QOI_NO_STDIO
 
 
-// Encode raw RGB or RGBA pixels into a QOI image in memory. w and h denote the
-// width and height of the pixel data. channels must be either 3 for RGB data 
-// or 4 for RGBA.
+// Encode raw RGB or RGBA pixels into a QOI image in memory.
+
 // The function either returns NULL on failure (invalid parameters or malloc 
-// failed) or a pointer to the encoded data on success. On success the out_len
+// failed) or a pointer to the encoded data on success. On success the out_len 
 // is set to the size in bytes of the encoded data.
+
 // The returned qoi data should be free()d after user.
 
-void *qoi_encode(const void *data, int w, int h, int channels, int *out_len);
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
 
 
-// Decode a QOI image from memory into either raw RGB (channels=3) or RGBA 
-// (channels=4) pixel data.
+// Decode a QOI image from memory.
+
 // The function either returns NULL on failure (invalid parameters or malloc 
-// failed) or a pointer to the decoded pixels. On success out_w and out_h will
-// be set to the width and height of the decoded image.
+// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
+// is filled with the description from the file header.
+
 // The returned pixel data should be free()d after use.
 
-void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channels);
+void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
+
 
 #ifdef __cplusplus
 }
@@ -265,17 +301,20 @@ unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
 	return (a << 24) | (b << 16) | (c << 8) | d;
 }
 
-void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	if (
-		data == NULL || out_len == NULL ||
-		w <= 0 || w >= (1 << 16) ||
-		h <= 0 || h >= (1 << 16) ||
-		channels < 3 || channels > 4
+		data == NULL || out_len == NULL || desc == NULL ||
+		desc->width == 0 || desc->height == 0 ||
+		desc->channels < 3 || desc->channels > 4 ||
+		(desc->colorspace & 0xf0) != 0
 	) {
 		return NULL;
 	}
 
-	int max_size = w * h * (channels + 1) + QOI_HEADER_SIZE + QOI_PADDING;
+	int max_size = 
+		desc->width * desc->height * (desc->channels + 1) + 
+		QOI_HEADER_SIZE + QOI_PADDING;
+
 	int p = 0;
 	unsigned char *bytes = QOI_MALLOC(max_size);
 	if (!bytes) {
@@ -283,10 +322,11 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	}
 
 	qoi_write_32(bytes, &p, QOI_MAGIC);
-	qoi_write_32(bytes, &p, w);
-	qoi_write_32(bytes, &p, h);
-	bytes[p++] = channels;
-	bytes[p++] = 0; // TODO: accept a colorspace as a parameter to this function
+	qoi_write_32(bytes, &p, desc->width);
+	qoi_write_32(bytes, &p, desc->height);
+	bytes[p++] = desc->channels;
+	bytes[p++] = desc->colorspace;
+
 
 	const unsigned char *pixels = (const unsigned char *)data;
 
@@ -295,11 +335,11 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	int run = 0;
 	qoi_rgba_t px_prev = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t px = px_prev;
-
-	int px_len = w * h * channels;
-	int px_end = px_len - channels;
-	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
-		if (channels == 4) {
+	
+	int px_len = desc->width * desc->height * desc->channels;
+	int px_end = px_len - desc->channels;
+	for (int px_pos = 0; px_pos < px_len; px_pos += desc->channels) {
+		if (desc->channels == 4) {
 			px = *(qoi_rgba_t *)(pixels + px_pos);
 		}
 		else {
@@ -382,8 +422,12 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	return bytes;
 }
 
-void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channels) {
-	if (channels < 3 || channels > 4 || size < QOI_HEADER_SIZE + QOI_PADDING) {
+void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
+	if (
+		data == NULL || desc == NULL ||
+		(channels != 0 && channels != 3 && channels != 4) ||
+		size < QOI_HEADER_SIZE + QOI_PADDING
+	) {
 		return NULL;
 	}
 
@@ -391,20 +435,24 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 	int p = 0;
 
 	unsigned int header_magic = qoi_read_32(bytes, &p);
-	unsigned int header_w = qoi_read_32(bytes, &p);
-	unsigned int header_h = qoi_read_32(bytes, &p);
-	unsigned int header_channels = bytes[p++];
-	unsigned int header_colorspace = bytes[p++];
+	desc->width = qoi_read_32(bytes, &p);
+	desc->height = qoi_read_32(bytes, &p);
+	desc->channels = bytes[p++];
+	desc->colorspace = bytes[p++];
 
 	if (
-		header_w == 0 || header_h == 0 || 
-		header_channels < 3 || header_channels > 4 ||
+		desc->width == 0 || desc->height == 0 || 
+		desc->channels < 3 || desc->channels > 4 ||
 		header_magic != QOI_MAGIC
 	) {
 		return NULL;
 	}
 
-	int px_len = header_w * header_h * channels;
+	if (channels == 0) {
+		channels = desc->channels;
+	}
+
+	int px_len = desc->width * desc->height * channels;
 	unsigned char *pixels = QOI_MALLOC(px_len);
 	if (!pixels) {
 		return NULL;
@@ -471,17 +519,15 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 		}
 	}
 
-	*out_w = header_w;
-	*out_h = header_h;
 	return pixels;
 }
 
 #ifndef QOI_NO_STDIO
 #include <stdio.h>
 
-int qoi_write(const char *filename, const void *data, int w, int h, int channels) {
+int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	int size;
-	void *encoded = qoi_encode(data, w, h, channels, &size);
+	void *encoded = qoi_encode(data, desc, &size);
 	if (!encoded) {
 		return 0;
 	}
@@ -498,7 +544,7 @@ int qoi_write(const char *filename, const void *data, int w, int h, int channels
 	return size;
 }
 
-void *qoi_read(const char *filename, int *out_w, int *out_h, int channels) {
+void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 	FILE *f = fopen(filename, "rb");
 	if (!f) {
 		return NULL;
@@ -516,7 +562,7 @@ void *qoi_read(const char *filename, int *out_w, int *out_h, int channels) {
 	int bytes_read = fread(data, 1, size, f);
 	fclose(f);
 
-	void *pixels = qoi_decode(data, bytes_read, out_w, out_h, channels);
+	void *pixels = qoi_decode(data, bytes_read, desc, channels);
 	QOI_FREE(data);
 	return pixels;
 }

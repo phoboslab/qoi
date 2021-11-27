@@ -48,20 +48,24 @@ SOFTWARE.
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
-		printf("Usage: qoiconv infile outfile\n");
+		printf("Usage: qoiconv <infile> <outfile>\n");
 		printf("Examples:\n");
-		printf("  qoiconv image.png image.qoi\n");
-		printf("  qoiconv image.qoi image.png\n");
+		printf("  qoiconv input.png output.qoi\n");
+		printf("  qoiconv input.qoi output.png\n");
 		exit(1);
 	}
 
 	void *pixels = NULL;
-	int w, h;
+	int w, h, channels;
 	if (STR_ENDS_WITH(argv[1], ".png")) {
-		pixels = (void *)stbi_load(argv[1], &w, &h, NULL, 4);
+		pixels = (void *)stbi_load(argv[1], &w, &h, &channels, 0);
 	}
 	else if (STR_ENDS_WITH(argv[1], ".qoi")) {
-		pixels = qoi_read(argv[1], &w, &h, 4);
+		qoi_desc desc;
+		pixels = qoi_read(argv[1], &desc, 0);
+		channels = desc.channels;
+		w = desc.width;
+		h = desc.height;
 	}
 
 	if (pixels == NULL) {
@@ -71,10 +75,15 @@ int main(int argc, char **argv) {
 
 	int encoded = 0;
 	if (STR_ENDS_WITH(argv[2], ".png")) {
-		encoded = stbi_write_png(argv[2], w, h, 4, pixels, 0);
+		encoded = stbi_write_png(argv[2], w, h, channels, pixels, 0);
 	}
 	else if (STR_ENDS_WITH(argv[2], ".qoi")) {
-		encoded = qoi_write(argv[2], pixels, w, h, 4);
+		encoded = qoi_write(argv[2], pixels, &(qoi_desc){
+			.width = w,
+			.height = h, 
+			.channels = channels,
+			.colorspace = QOI_SRGB
+		});
 	}
 
 	if (!encoded) {
@@ -82,5 +91,6 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
+	free(pixels);
 	return 0;
 }

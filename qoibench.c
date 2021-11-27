@@ -350,7 +350,12 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 	// Load the encoded PNG, encoded QOI and raw pixels into memory
 	void *pixels = (void *)stbi_load(path, &w, &h, NULL, 4);
 	void *encoded_png = fload(path, &encoded_png_size);
-	void *encoded_qoi = qoi_encode(pixels, w, h, 4, &encoded_qoi_size);
+	void *encoded_qoi = qoi_encode(pixels, &(qoi_desc){
+			.width = w,
+			.height = h, 
+			.channels = 4,
+			.colorspace = QOI_SRGB
+		}, &encoded_qoi_size);
 
 	if (!pixels || !encoded_qoi || !encoded_png) {
 		ERROR("Error decoding %s\n", path);
@@ -377,8 +382,8 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 	});
 
 	BENCHMARK_FN(runs, res.qoi.decode_time, {
-		int dec_w, dec_h;
-		void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &dec_w, &dec_h, 4);
+		qoi_desc desc;
+		void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &desc, 4);
 		free(dec_p);
 	});
 
@@ -400,7 +405,12 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 
 	BENCHMARK_FN(runs, res.qoi.encode_time, {
 		int enc_size;
-		void *enc_p = qoi_encode(pixels, w, h, 4, &enc_size);
+		void *enc_p = qoi_encode(pixels, &(qoi_desc){
+			.width = w,
+			.height = h, 
+			.channels = 4,
+			.colorspace = QOI_SRGB
+		}, &enc_size);
 		res.qoi.size = enc_size;
 		free(enc_p);
 	});

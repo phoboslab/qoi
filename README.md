@@ -10,10 +10,13 @@ More info at https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compressi
 ⚠️ Please note that this library is not yet ready to deal with untrusted input.
 
 ⚠️ 2021.11.27 – the specification for QOI has changed to accomodate some 
-concerns with the format. These specification changes are **not yet reflected in
-the code here**. If you are working on a QOI implementation, please refer to 
+concerns with the format. If you are working on a QOI implementation, please 
+refer to 
 [#37 The QOI File Format Specification](https://github.com/phoboslab/qoi/issues/37) 
 for the details.
+
+These specification changes are ~~not yet reflected in the code here~~ 
+reflected in qoi.h now. 
 
 
 ## Why?
