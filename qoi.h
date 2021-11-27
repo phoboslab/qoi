@@ -284,7 +284,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 #define QOI_MASK_3  0xe0 // 11100000
 #define QOI_MASK_4  0xf0 // 11110000
 
-#define QOI_COLOR_HASH(C) (C.rgba.r ^ C.rgba.g ^ C.rgba.b ^ C.rgba.a)
+#define QOI_COLOR_HASH(C) qoi_color_hash(C)
 #define QOI_MAGIC \
 	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
@@ -297,6 +297,17 @@ typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
 } qoi_rgba_t;
+
+unsigned int qoi_color_hash(qoi_rgba_t px)
+{
+	unsigned int h = px.rgba.b | (px.rgba.g << 8) | (px.rgba.r << 16);
+	h ^= h >> 15;
+	h *= 0xdb91908du;
+	h ^= h >> 16;
+	h *= 0x6be5be6fu;
+	h ^= h >> 17;
+	return h ^ px.rgba.a;
+}
 
 void qoi_write_32(unsigned char *bytes, int *p, unsigned int v) {
 	bytes[(*p)++] = (0xff000000 & v) >> 24;
