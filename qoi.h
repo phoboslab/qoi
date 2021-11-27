@@ -103,9 +103,9 @@ QOI_INDEX {
 
 QOI_DIFF_8 {
 	u8 tag  :  2;   // b01
-	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
-	u8 dg   :  2;   // 2-bit green channel difference: -1..2
-	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
+	u8 dr   :  2;   // 2-bit   red channel difference: -2..1
+	u8 dg   :  2;   // 2-bit green channel difference: -2..1
+	u8 db   :  2;   // 2-bit  blue channel difference: -2..1
 }
 
 QOI_DIFF_16 {
