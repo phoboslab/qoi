@@ -75,10 +75,14 @@ you can define QOI_MALLOC and QOI_FREE before including this library.
 A QOI file has a 12 byte header, followed by any number of data "chunks".
 
 struct qoi_header_t {
-	char [4];              // magic bytes "qoif"
-	unsigned short width;  // image width in pixels (BE)
-	unsigned short height; // image height in pixels (BE)
-	unsigned int size;     // number of data bytes following this header (BE)
+	char     magic[4];   // magic bytes "qoif"
+	uint32_t width;      // image width in pixels (BE)
+	uint32_t height;     // image height in pixels (BE)
+	uint8_t  channels;   // must be 3 (RGB) or 4 (RGBA)
+	uint8_t  colorspace; // a bitmap 0000rgba where
+	                     //   - a zero bit indicates sRGBA, 
+	                     //   - a one bit indicates linear (user interpreted)
+	                     //   colorspace for each channel
 };
 
 The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
@@ -113,24 +117,24 @@ QOI_RUN_16 {
 
 QOI_DIFF_8 {
 	u8 tag  :  2;   // b10
-	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
-	u8 dg   :  2;   // 2-bit green channel difference: -1..2
-	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
+	u8 dr   :  2;   // 2-bit   red channel difference: -2..1
+	u8 dg   :  2;   // 2-bit green channel difference: -2..1
+	u8 db   :  2;   // 2-bit  blue channel difference: -2..1
 }
 
 QOI_DIFF_16 {
 	u8 tag  :  3;   // b110
-	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
-	u8 dg   :  4;   // 4-bit green channel difference:  -7.. 8
-	u8 db   :  4;   // 4-bit  blue channel difference:  -7.. 8
+	u8 dr   :  5;   // 5-bit   red channel difference: -16..15
+	u8 dg   :  4;   // 4-bit green channel difference:  -8.. 7
+	u8 db   :  4;   // 4-bit  blue channel difference:  -8.. 7
 }
 
 QOI_DIFF_24 {
 	u8 tag  :  4;   // b1110
-	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
-	u8 dg   :  5;   // 5-bit green channel difference: -15..16
-	u8 db   :  5;   // 5-bit  blue channel difference: -15..16
-	u8 da   :  5;   // 5-bit alpha channel difference: -15..16
+	u8 dr   :  5;   // 5-bit   red channel difference: -16..15
+	u8 dg   :  5;   // 5-bit green channel difference: -16..15
+	u8 db   :  5;   // 5-bit  blue channel difference: -16..15
+	u8 da   :  5;   // 5-bit alpha channel difference: -16..15
 }
 
 QOI_COLOR {
@@ -246,26 +250,19 @@ typedef union {
 	unsigned int v;
 } qoi_rgba_t;
 
-void qoi_write_16(unsigned char *bytes, int *p, unsigned short v) {
-	bytes[(*p)++] = (0xff00 & v) >> 8;
-	bytes[(*p)++] = (0xff & v);
-}
-
 void qoi_write_32(unsigned char *bytes, int *p, unsigned int v) {
-	qoi_write_16(bytes, p, (v & 0xffff0000) >> 16);
-	qoi_write_16(bytes, p, (v & 0xffff));
-}
-
-unsigned int qoi_read_16(const unsigned char *bytes, int *p) {
-	unsigned int a = bytes[(*p)++];
-	unsigned int b = bytes[(*p)++];
-	return (a << 8) | b;
+	bytes[(*p)++] = (0xff000000 & v) >> 24;
+	bytes[(*p)++] = (0x00ff0000 & v) >> 16;
+	bytes[(*p)++] = (0x0000ff00 & v) >> 8;
+	bytes[(*p)++] = (0x000000ff & v);
 }
 
 unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
-	unsigned int a = qoi_read_16(bytes, p);
-	unsigned int b = qoi_read_16(bytes, p);
-	return (a << 16) | b;
+	unsigned int a = bytes[(*p)++];
+	unsigned int b = bytes[(*p)++];
+	unsigned int c = bytes[(*p)++];
+	unsigned int d = bytes[(*p)++];
+	return (a << 24) | (b << 16) | (c << 8) | d;
 }
 
 void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
@@ -286,9 +283,10 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	}
 
 	qoi_write_32(bytes, &p, QOI_MAGIC);
-	qoi_write_16(bytes, &p, w);
-	qoi_write_16(bytes, &p, h);
-	qoi_write_32(bytes, &p, 0); // size, will be set later
+	qoi_write_32(bytes, &p, w);
+	qoi_write_32(bytes, &p, h);
+	bytes[p++] = channels;
+	bytes[p++] = 0; // TODO: accept a colorspace as a parameter to this function
 
 	const unsigned char *pixels = (const unsigned char *)data;
 
@@ -342,26 +340,26 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 				int va = px.rgba.a - px_prev.rgba.a;
 
 				if (
-					vr > -16 && vr < 17 && vg > -16 && vg < 17 && 
-					vb > -16 && vb < 17 && va > -16 && va < 17
+					vr > -17 && vr < 16 && vg > -17 && vg < 16 && 
+					vb > -17 && vb < 16 && va > -17 && va < 16
 				) {
 					if (
-						va == 0 && vr > -2 && vr < 3 &&
-						vg > -2 && vg < 3 && vb > -2 && vb < 3
+						va == 0 && vr > -3 && vr < 2 &&
+						vg > -3 && vg < 2 && vb > -3 && vb < 2
 					) {
-						bytes[p++] = QOI_DIFF_8 | ((vr + 1) << 4) | (vg + 1) << 2 | (vb + 1);
+						bytes[p++] = QOI_DIFF_8 | ((vr + 2) << 4) | (vg + 2) << 2 | (vb + 2);
 					}
 					else if (
-						va == 0 && vr > -16 && vr < 17 && 
-						vg > -8 && vg < 9 && vb > -8 && vb < 9
+						va == 0 && vr > -17 && vr < 16 && 
+						vg > -9 && vg < 8 && vb > -9 && vb < 8
 					) {
-						bytes[p++] = QOI_DIFF_16 | (vr + 15);
-						bytes[p++] = ((vg + 7) << 4) | (vb + 7);
+						bytes[p++] = QOI_DIFF_16 | (vr + 16);
+						bytes[p++] = ((vg + 8) << 4) | (vb + 8);
 					}
 					else {
-						bytes[p++] = QOI_DIFF_24 | ((vr + 15) >> 1);
-						bytes[p++] = ((vr + 15) << 7) | ((vg + 15) << 2) | ((vb + 15) >> 3);
-						bytes[p++] = ((vb + 15) << 5) | (va + 15);
+						bytes[p++] = QOI_DIFF_24 | ((vr + 16) >> 1);
+						bytes[p++] = ((vr + 16) << 7) | ((vg + 16) << 2) | ((vb + 16) >> 3);
+						bytes[p++] = ((vb + 16) << 5) | (va + 16);
 					}
 				}
 				else {
@@ -380,35 +378,33 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		bytes[p++] = 0;
 	}
 
-	int data_len = p - QOI_HEADER_SIZE;
 	*out_len = p;
-
-	p = 8;
-	qoi_write_32(bytes, &p, data_len);
 	return bytes;
 }
 
 void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channels) {
-	if (channels < 3 || channels > 4 || size < QOI_HEADER_SIZE) {
+	if (channels < 3 || channels > 4 || size < QOI_HEADER_SIZE + QOI_PADDING) {
 		return NULL;
 	}
 
 	const unsigned char *bytes = (const unsigned char *)data;
 	int p = 0;
 
-	int magic = qoi_read_32(bytes, &p);
-	int w = qoi_read_16(bytes, &p);
-	int h = qoi_read_16(bytes, &p);
-	int data_len = qoi_read_32(bytes, &p);
+	unsigned int header_magic = qoi_read_32(bytes, &p);
+	unsigned int header_w = qoi_read_32(bytes, &p);
+	unsigned int header_h = qoi_read_32(bytes, &p);
+	unsigned int header_channels = bytes[p++];
+	unsigned int header_colorspace = bytes[p++];
 
 	if (
-		w == 0 || h == 0 || magic != QOI_MAGIC || 
-		size != data_len + QOI_HEADER_SIZE
+		header_w == 0 || header_h == 0 || 
+		header_channels < 3 || header_channels > 4 ||
+		header_magic != QOI_MAGIC
 	) {
 		return NULL;
 	}
 
-	int px_len = w * h * channels;
+	int px_len = header_w * header_h * channels;
 	unsigned char *pixels = QOI_MALLOC(px_len);
 	if (!pixels) {
 		return NULL;
@@ -437,23 +433,23 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 				run = (((b1 & 0x1f) << 8) | (b2)) + 32;
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_DIFF_8) {
-				px.rgba.r += ((b1 >> 4) & 0x03) - 1;
-				px.rgba.g += ((b1 >> 2) & 0x03) - 1;
-				px.rgba.b += ( b1       & 0x03) - 1;
+				px.rgba.r += ((b1 >> 4) & 0x03) - 2;
+				px.rgba.g += ((b1 >> 2) & 0x03) - 2;
+				px.rgba.b += ( b1       & 0x03) - 2;
 			}
 			else if ((b1 & QOI_MASK_3) == QOI_DIFF_16) {
 				int b2 = bytes[p++];
-				px.rgba.r += (b1 & 0x1f) - 15;
-				px.rgba.g += (b2 >> 4) - 7;
-				px.rgba.b += (b2 & 0x0f) - 7;
+				px.rgba.r += (b1 & 0x1f) - 16;
+				px.rgba.g += (b2 >> 4) - 8;
+				px.rgba.b += (b2 & 0x0f) - 8;
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_DIFF_24) {
 				int b2 = bytes[p++];
 				int b3 = bytes[p++];
-				px.rgba.r += (((b1 & 0x0f) << 1) | (b2 >> 7)) - 15;
-				px.rgba.g +=  ((b2 & 0x7c) >> 2) - 15;
-				px.rgba.b += (((b2 & 0x03) << 3) | ((b3 & 0xe0) >> 5)) - 15;
-				px.rgba.a +=   (b3 & 0x1f) - 15;
+				px.rgba.r += (((b1 & 0x0f) << 1) | (b2 >> 7)) - 16;
+				px.rgba.g +=  ((b2 & 0x7c) >> 2) - 16;
+				px.rgba.b += (((b2 & 0x03) << 3) | ((b3 & 0xe0) >> 5)) - 16;
+				px.rgba.a +=   (b3 & 0x1f) - 16;
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_COLOR) {
 				if (b1 & 8) { px.rgba.r = bytes[p++]; }
@@ -475,8 +471,8 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 		}
 	}
 
-	*out_w = w;
-	*out_h = h;
+	*out_w = header_w;
+	*out_h = header_h;
 	return pixels;
 }
 
