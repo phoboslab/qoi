@@ -1,0 +1,26 @@
+BasedOnStyle: Chromium
+
+AllowShortBlocksOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: Never
+BreakBeforeTernaryOperators: false
+ColumnLimit: 110
+IndentCaseLabels: false
+IndentExternBlock: NoIndent
+IndentPPDirectives: BeforeHash
+IndentPPDirectives: None
+IndentWidth: 4
+IndentWrappedFunctionNames: false
+PointerAlignment: Right
+SortUsingDeclarations: true
+SpaceBeforeCtorInitializerColon: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeRangeBasedForLoopColon: true
+SpaceBeforeSquareBrackets: false
+SpaceInEmptyBlock: false
+SpacesInAngles: false
+TabWidth: 4
+UseTab: ForIndentation
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  BeforeElse: true

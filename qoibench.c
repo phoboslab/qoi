@@ -3,8 +3,8 @@
 Simple benchmark suite for png, stbi and qoi
 
 Requires libpng, "stb_image.h" and "stb_image_write.h"
-Compile with: 
-	gcc qoibench.c -std=gnu99 -lpng -O3 -o qoibench 
+Compile with:
+    gcc qoibench.c -std=gnu99 -lpng -O3 -o qoibench
 
 Dominic Szablewski - https://phoboslab.org
 
@@ -31,9 +31,9 @@ SOFTWARE.
 
 */
 
-#include <stdio.h>
 #include <dirent.h>
 #include <png.h>
+#include <stdio.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -46,70 +46,69 @@ SOFTWARE.
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-
-
-
 // -----------------------------------------------------------------------------
 // Cross platform high resolution timer
 // From https://gist.github.com/ForeverZer0/0a4f80fc02b96e19380ebb7a3debbee5
 
 #include <stdint.h>
 #if defined(__linux)
-	#define HAVE_POSIX_TIMER
-	#include <time.h>
-	#ifdef CLOCK_MONOTONIC
-		#define CLOCKID CLOCK_MONOTONIC
-	#else
-		#define CLOCKID CLOCK_REALTIME
-	#endif
+#define HAVE_POSIX_TIMER
+#include <time.h>
+#ifdef CLOCK_MONOTONIC
+#define CLOCKID CLOCK_MONOTONIC
+#else
+#define CLOCKID CLOCK_REALTIME
+#endif
 #elif defined(__APPLE__)
-	#define HAVE_MACH_TIMER
-	#include <mach/mach_time.h>
+#define HAVE_MACH_TIMER
+#include <mach/mach_time.h>
 #elif defined(_WIN32)
-	#define WIN32_LEAN_AND_MEAN
-	#include <windows.h>
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
 #endif
 
 static uint64_t ns() {
 	static uint64_t is_init = 0;
 #if defined(__APPLE__)
-		static mach_timebase_info_data_t info;
-		if (0 == is_init) {
-			mach_timebase_info(&info);
-			is_init = 1;
-		}
-		uint64_t now;
-		now = mach_absolute_time();
-		now *= info.numer;
-		now /= info.denom;
-		return now;
+	static mach_timebase_info_data_t info;
+	if (0 == is_init) {
+		mach_timebase_info(&info);
+		is_init = 1;
+	}
+	uint64_t now;
+	now = mach_absolute_time();
+	now *= info.numer;
+	now /= info.denom;
+	return now;
 #elif defined(__linux)
-		static struct timespec linux_rate;
-		if (0 == is_init) {
-			clock_getres(CLOCKID, &linux_rate);
-			is_init = 1;
-		}
-		uint64_t now;
-		struct timespec spec;
-		clock_gettime(CLOCKID, &spec);
-		now = spec.tv_sec * 1.0e9 + spec.tv_nsec;
-		return now;
+	static struct timespec linux_rate;
+	if (0 == is_init) {
+		clock_getres(CLOCKID, &linux_rate);
+		is_init = 1;
+	}
+	uint64_t now;
+	struct timespec spec;
+	clock_gettime(CLOCKID, &spec);
+	now = spec.tv_sec * 1.0e9 + spec.tv_nsec;
+	return now;
 #elif defined(_WIN32)
-		static LARGE_INTEGER win_frequency;
-		if (0 == is_init) {
-			QueryPerformanceFrequency(&win_frequency);
-			is_init = 1;
-		}
-		LARGE_INTEGER now;
-		QueryPerformanceCounter(&now);
-		return (uint64_t) ((1e9 * now.QuadPart)	/ win_frequency.QuadPart);
+	static LARGE_INTEGER win_frequency;
+	if (0 == is_init) {
+		QueryPerformanceFrequency(&win_frequency);
+		is_init = 1;
+	}
+	LARGE_INTEGER now;
+	QueryPerformanceCounter(&now);
+	return (uint64_t)((1e9 * now.QuadPart) / win_frequency.QuadPart);
 #endif
 }
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define ERROR(...) printf("abort at line " TOSTRING(__LINE__) ": " __VA_ARGS__); printf("\n"); exit(1)
-
+#define ERROR(...)                                                \
+	printf("abort at line " TOSTRING(__LINE__) ": " __VA_ARGS__); \
+	printf("\n");                                                 \
+	exit(1)
 
 // -----------------------------------------------------------------------------
 // libpng encode/decode wrappers
@@ -123,7 +122,7 @@ typedef struct {
 } libpng_write_t;
 
 void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
-	libpng_write_t *write_data = (libpng_write_t*)png_get_io_ptr(png_ptr);
+	libpng_write_t *write_data = (libpng_write_t *)png_get_io_ptr(png_ptr);
 	if (write_data->size + length >= write_data->capacity) {
 		ERROR("PNG write");
 	}
@@ -147,27 +146,15 @@ void *libpng_encode(void *pixels, int w, int h, int *out_len) {
 	}
 
 	// Output is 8bit depth, RGBA format.
-	png_set_IHDR(
-		png,
-		info,
-		w, h,
-		8,
-		PNG_COLOR_TYPE_RGBA,
-		PNG_INTERLACE_NONE,
-		PNG_COMPRESSION_TYPE_DEFAULT,
-		PNG_FILTER_TYPE_DEFAULT
-	);
+	png_set_IHDR(png, info, w, h, 8, PNG_COLOR_TYPE_RGBA, PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
+	             PNG_FILTER_TYPE_DEFAULT);
 
 	png_bytep row_pointers[h];
-	for(int y = 0; y < h; y++){
+	for (int y = 0; y < h; y++) {
 		row_pointers[y] = ((unsigned char *)pixels + y * w * 4);
 	}
 
-	libpng_write_t write_data = {
-		.size = 0,
-		.capacity = w * h * 4,
-		.data = malloc(w * h * 4)
-	};
+	libpng_write_t write_data = {.size = 0, .capacity = w * h * 4, .data = malloc(w * h * 4)};
 
 	png_set_rows(png, info, row_pointers);
 	png_set_write_fn(png, &write_data, libpng_encode_callback, NULL);
@@ -179,7 +166,6 @@ void *libpng_encode(void *pixels, int w, int h, int *out_len) {
 	return write_data.data;
 }
 
-
 typedef struct {
 	int pos;
 	int size;
@@ -187,7 +173,7 @@ typedef struct {
 } libpng_read_t;
 
 void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
-	libpng_read_t *read_data = (libpng_read_t*)png_get_io_ptr(png);
+	libpng_read_t *read_data = (libpng_read_t *)png_get_io_ptr(png);
 	if (read_data->pos + length > read_data->size) {
 		ERROR("PNG read %d bytes at pos %d (size: %d)", length, read_data->pos, read_data->size);
 	}
@@ -195,7 +181,7 @@ void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	read_data->pos += length;
 }
 
-void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
+void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) {
 		ERROR("png_create_read_struct");
@@ -206,23 +192,19 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 		ERROR("png_create_info_struct");
 	}
 
-	libpng_read_t read_data = {
-		.pos = 0,
-		.size = size,
-		.data = data
-	};
-	
+	libpng_read_t read_data = {.pos = 0, .size = size, .data = data};
+
 	png_set_read_fn(png, &read_data, png_decode_callback);
 	png_set_sig_bytes(png, 0);
 	png_read_info(png, info);
-	
+
 	png_uint_32 w, h;
 	int bitDepth, colorType, interlaceType;
 	png_get_IHDR(png, info, &w, &h, &bitDepth, &colorType, &interlaceType, NULL, NULL);
-	
+
 	// 16 bit -> 8 bit
 	png_set_strip_16(png);
-	
+
 	// 1, 2, 4 bit -> 8 bit
 	if (bitDepth < 8) {
 		png_set_packing(png);
@@ -231,7 +213,7 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	if (colorType & PNG_COLOR_MASK_PALETTE) {
 		png_set_expand(png);
 	}
-	
+
 	if (!(colorType & PNG_COLOR_MASK_COLOR)) {
 		png_set_gray_to_rgb(png);
 	}
@@ -240,31 +222,30 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	if (png_get_valid(png, info, PNG_INFO_tRNS)) {
 		png_set_tRNS_to_alpha(png);
 	}
-	
+
 	// make sure every pixel has an alpha value
 	if (!(colorType & PNG_COLOR_MASK_ALPHA)) {
 		png_set_filler(png, 255, PNG_FILLER_AFTER);
 	}
-	
+
 	png_read_update_info(png, info);
 
-	unsigned char* out = malloc(w * h * 4);
+	unsigned char *out = malloc(w * h * 4);
 	*out_w = w;
 	*out_h = h;
-	
+
 	// png_uint_32 rowBytes = png_get_rowbytes(png, info);
 	png_bytep row_pointers[h];
-	for (png_uint_32 row = 0; row < h; row++ ) {
+	for (png_uint_32 row = 0; row < h; row++) {
 		row_pointers[row] = (png_bytep)(out + (row * w * 4));
 	}
-	
+
 	png_read_image(png, row_pointers);
 	png_read_end(png, info);
-	png_destroy_read_struct( &png, &info, NULL);
-	
+	png_destroy_read_struct(&png, &info, NULL);
+
 	return out;
 }
-
 
 // -----------------------------------------------------------------------------
 // stb_image encode callback
@@ -272,10 +253,9 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 void stbi_write_callback(void *context, void *data, int size) {
 	int *encoded_size = (int *)context;
 	*encoded_size += size;
-	// In theory we'd need to do another malloc(), memcpy() and free() here to 
+	// In theory we'd need to do another malloc(), memcpy() and free() here to
 	// be fair to the other decode functions...
 }
-
 
 // -----------------------------------------------------------------------------
 // function to load a whole file into memory
@@ -304,7 +284,6 @@ void *fload(const char *path, int *out_size) {
 	return buffer;
 }
 
-
 // -----------------------------------------------------------------------------
 // benchmark runner
 
@@ -323,23 +302,21 @@ typedef struct {
 	benchmark_lib_result_t qoi;
 } benchmark_result_t;
 
-
 // Run __VA_ARGS__ a number of times and meassure the time taken. The first
 // run is ignored.
-#define BENCHMARK_FN(RUNS, AVG_TIME, ...) \
-	do { \
-		uint64_t time = 0; \
-		for (int i = 0; i <= RUNS; i++) { \
-			uint64_t time_start = ns(); \
-			__VA_ARGS__ \
-			uint64_t time_end = ns(); \
-			if (i > 0) { \
+#define BENCHMARK_FN(RUNS, AVG_TIME, ...)      \
+	do {                                       \
+		uint64_t time = 0;                     \
+		for (int i = 0; i <= RUNS; i++) {      \
+			uint64_t time_start = ns();        \
+			__VA_ARGS__                        \
+			uint64_t time_end = ns();          \
+			if (i > 0) {                       \
 				time += time_end - time_start; \
-			} \
-		} \
-		AVG_TIME = time / RUNS; \
+			}                                  \
+		}                                      \
+		AVG_TIME = time / RUNS;                \
 	} while (0)
-
 
 benchmark_result_t benchmark_image(const char *path, int runs) {
 	int encoded_png_size;
@@ -361,7 +338,6 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 	res.w = w;
 	res.h = h;
 
-
 	// Decoding
 
 	BENCHMARK_FN(runs, res.libpng.decode_time, {
@@ -381,7 +357,6 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 		void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &dec_w, &dec_h, 4);
 		free(dec_p);
 	});
-
 
 	// Encoding
 
@@ -416,30 +391,20 @@ void benchmark_print_result(const char *head, benchmark_result_t res) {
 	double px = res.px;
 	printf("## %s size: %dx%d\n", head, res.w, res.h);
 	printf("        decode ms   encode ms   decode mpps   encode mpps   size kb\n");
-	printf(
-		"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", 
-		(double)res.libpng.decode_time/1000000.0, 
-		(double)res.libpng.encode_time/1000000.0, 
-		(res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time/1000.0) : 0),
-		(res.libpng.encode_time > 0 ? px / ((double)res.libpng.encode_time/1000.0) : 0),
-		res.libpng.size/1024
-	);
-	printf(
-		"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", 
-		(double)res.stbi.decode_time/1000000.0,
-		(double)res.stbi.encode_time/1000000.0,
-		(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
-		(res.stbi.encode_time > 0 ? px / ((double)res.stbi.encode_time/1000.0) : 0),
-		res.stbi.size/1024
-	);
-	printf(
-		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", 
-		(double)res.qoi.decode_time/1000000.0,
-		(double)res.qoi.encode_time/1000000.0,
-		(res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time/1000.0) : 0),
-		(res.qoi.encode_time > 0 ? px / ((double)res.qoi.encode_time/1000.0) : 0),
-		res.qoi.size/1024
-	);
+	printf("libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", (double)res.libpng.decode_time / 1000000.0,
+	       (double)res.libpng.encode_time / 1000000.0,
+	       (res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time / 1000.0) : 0),
+	       (res.libpng.encode_time > 0 ? px / ((double)res.libpng.encode_time / 1000.0) : 0),
+	       res.libpng.size / 1024);
+	printf("stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", (double)res.stbi.decode_time / 1000000.0,
+	       (double)res.stbi.encode_time / 1000000.0,
+	       (res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time / 1000.0) : 0),
+	       (res.stbi.encode_time > 0 ? px / ((double)res.stbi.encode_time / 1000.0) : 0),
+	       res.stbi.size / 1024);
+	printf("qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", (double)res.qoi.decode_time / 1000000.0,
+	       (double)res.qoi.encode_time / 1000000.0,
+	       (res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time / 1000.0) : 0),
+	       (res.qoi.encode_time > 0 ? px / ((double)res.qoi.encode_time / 1000.0) : 0), res.qoi.size / 1024);
 	printf("\n");
 }
 
@@ -457,7 +422,7 @@ int main(int argc, char **argv) {
 
 	int runs = atoi(argv[1]);
 	DIR *dir = opendir(argv[2]);
-	if (runs <=0) {
+	if (runs <= 0) {
 		runs = 1;
 	}
 
@@ -474,15 +439,14 @@ int main(int argc, char **argv) {
 		}
 		count++;
 
-		char *file_path = malloc(strlen(file->d_name) + strlen(argv[2])+8);
+		char *file_path = malloc(strlen(file->d_name) + strlen(argv[2]) + 8);
 		sprintf(file_path, "%s/%s", argv[2], file->d_name);
-		
+
 		benchmark_result_t res = benchmark_image(file_path, runs);
 		benchmark_print_result(file_path, res);
 
 		free(file_path);
 
-		
 		totals.px += res.px;
 		totals.libpng.encode_time += res.libpng.encode_time;
 		totals.libpng.decode_time += res.libpng.decode_time;

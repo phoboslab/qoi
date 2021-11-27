@@ -3,8 +3,8 @@
 Command line tool to convert between png <> qoi format
 
 Requires "stb_image.h" and "stb_image_write.h"
-Compile with: 
-	gcc qoiconv.c -std=c99 -O3 -o qoiconv
+Compile with:
+    gcc qoiconv.c -std=c99 -O3 -o qoiconv
 
 Dominic Szablewski - https://phoboslab.org
 
@@ -31,7 +31,6 @@ SOFTWARE.
 
 */
 
-
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
 #define STBI_NO_LINEAR
@@ -43,8 +42,7 @@ SOFTWARE.
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-
-#define STR_ENDS_WITH(S, E) (strcmp(S + strlen(S) - (sizeof(E)-1), E) == 0)
+#define STR_ENDS_WITH(S, E) (strcmp(S + strlen(S) - (sizeof(E) - 1), E) == 0)
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
