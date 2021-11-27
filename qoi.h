@@ -556,6 +556,7 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 
 	void *data = QOI_MALLOC(size);
 	if (!data) {
+		fclose(f);
 		return NULL;
 	}
 
