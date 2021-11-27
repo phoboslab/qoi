@@ -81,7 +81,7 @@ you can define QOI_MALLOC and QOI_FREE before including this library.
 
 -- Data Format
 
-A QOI file has a 12 byte header, followed by any number of data "chunks".
+A QOI file has a 14 byte header, followed by any number of data "chunks".
 
 struct qoi_header_t {
 	char     magic[4];   // magic bytes "qoif"
@@ -278,7 +278,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 #define QOI_MAGIC \
 	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
-#define QOI_HEADER_SIZE 12
+#define QOI_HEADER_SIZE 14
 #define QOI_PADDING 4
 
 typedef union {
