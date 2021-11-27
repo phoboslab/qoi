@@ -101,36 +101,46 @@ QOI_INDEX {
 	u8 idx  :  6;   // 6-bit index into the color index array: 0..63
 }
 
-QOI_RUN_8 {
-	u8 tag  :  3;   // b010
-	u8 run  :  5;   // 5-bit run-length repeating the previous pixel: 1..32
-}
-
-QOI_RUN_16 {
-	u8 tag  :  3;   // b011
-	u16 run : 13;   // 13-bit run-length repeating the previous pixel: 33..8224
-}
-
 QOI_DIFF_8 {
-	u8 tag  :  2;   // b10
+	u8 tag  :  2;   // b01
 	u8 dr   :  2;   // 2-bit   red channel difference: -1..2
 	u8 dg   :  2;   // 2-bit green channel difference: -1..2
 	u8 db   :  2;   // 2-bit  blue channel difference: -1..2
 }
 
 QOI_DIFF_16 {
+	u8 tag  :  3;   // b10
+	u8 dr   :  5;   // 5-bit   red channel difference: -16..15
+	u8 dg   :  5;   // 5-bit green channel difference: -16..15
+	u8 db   :  4;   // 4-bit  blue channel difference:  -8.. 7
+}
+
+QOI_DIFF_16_A {
+	u8 tag  :  3;   // b10
+	u8 da   :  2;   // 2-bit  blue channel difference:  -2.. 1
+	u8 dr   :  4;   // 4-bit   red channel difference:  -8..7
+	u8 dg   :  4;   // 4-bit green channel difference:  -8.. 7
+	u8 db   :  4;   // 4-bit  blue channel difference:  -8.. 7
+}
+
+QOI_RUN_8 {
 	u8 tag  :  3;   // b110
-	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
-	u8 dg   :  4;   // 4-bit green channel difference:  -7.. 8
-	u8 db   :  4;   // 4-bit  blue channel difference:  -7.. 8
+	u8 run  :  5;   // 5-bit run-length (-1) repeating the previous pixel: 0..31, can be repeated
 }
 
 QOI_DIFF_24 {
 	u8 tag  :  4;   // b1110
-	u8 dr   :  5;   // 5-bit   red channel difference: -15..16
-	u8 dg   :  5;   // 5-bit green channel difference: -15..16
-	u8 db   :  5;   // 5-bit  blue channel difference: -15..16
-	u8 da   :  5;   // 5-bit alpha channel difference: -15..16
+	u8 dr   :  7;   // 7-bit   red channel difference: -64..63
+	u8 dg   :  7;   // 7-bit green channel difference: -64..63
+	u8 db   :  6;   // 6-bit  blue channel difference: -32..31
+}
+
+QOI_DIFF_24_A {
+	u8 tag  :  4;   // b1110
+	u8 da   :  5;   // 5-bit alpha channel difference: -16..15
+	u8 dr   :  5;   // 5-bit   red channel difference: -16..15
+	u8 dg   :  5;   // 5-bit green channel difference: -16..15
+	u8 db   :  5;   // 5-bit  blue channel difference: -16..15
 }
 
 QOI_COLOR {
@@ -143,6 +153,7 @@ QOI_COLOR {
 	u8 g;           // green value if has_g == 1: 0..255
 	u8 b;           //  blue value if has_b == 1: 0..255
 	u8 a;           // alpha value if has_a == 1: 0..255
+	// if mask is zero, this is not a color but a mode switch (color vs alpha)
 }
 
 The byte stream is padded with 4 zero bytes. Size the longest chunk we can
@@ -218,15 +229,14 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 #include <stdlib.h>
 
 #ifndef QOI_MALLOC
-	#define QOI_MALLOC(sz) malloc(sz)
+	#define QOI_MALLOC(sz) (unsigned char *)malloc(sz)
 	#define QOI_FREE(p)    free(p)
 #endif
 
 #define QOI_INDEX   0x00 // 00xxxxxx
-#define QOI_RUN_8   0x40 // 010xxxxx
-#define QOI_RUN_16  0x60 // 011xxxxx
-#define QOI_DIFF_8  0x80 // 10xxxxxx
-#define QOI_DIFF_16 0xc0 // 110xxxxx
+#define QOI_DIFF_8  0x40 // 01xxxxxx
+#define QOI_DIFF_16 0x80 // 10xxxxxx
+#define QOI_RUN_8   0xc0 // 110xxxxx
 #define QOI_DIFF_24 0xe0 // 1110xxxx
 #define QOI_COLOR   0xf0 // 1111xxxx
 
@@ -240,6 +250,8 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
 #define QOI_HEADER_SIZE 12
 #define QOI_PADDING 4
+
+#define QOI_RANGE(value, limit) ((value) >= -(limit) && (value) < (limit))
 
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
@@ -295,6 +307,7 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 	qoi_rgba_t index[64] = {0};
 
 	int run = 0;
+	int mode = 0;
 	qoi_rgba_t px_prev = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t px = px_prev;
 
@@ -313,17 +326,34 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 		if (px.v == px_prev.v) {
 			run++;
 		}
+		else {
+			if (mode == 0 && px.rgba.a > 0 && px.rgba.a < 255)
+			{
+				// switch to alpha mode and stay that way
+				bytes[p++] = QOI_COLOR;
+				mode = 1;
+			}
+		}
 
-		if (run > 0 && (run == 0x2020 || px.v != px_prev.v || px_pos == px_end)) {
-			if (run < 33) {
-				run -= 1;
-				bytes[p++] = QOI_RUN_8 | run;
+		if (run > 0 && (px.v != px_prev.v || px_pos == px_end)) {
+			int len;
+			int start = p;
+			--run;
+			do
+			{
+				bytes[p++] = QOI_RUN_8 | (run & 0x1f);
+				run >>= 5;
+			} while (run > 0);
+
+			// swap to make big endian
+			len = (p - start) >> 1;
+			for (int i=0; i<len; i++)
+			{
+				unsigned char tmp = bytes[start + i];
+				bytes[start + i] = bytes[p - 1 - i];
+				bytes[p - 1 - i] = tmp;
 			}
-			else {
-				run -= 33;
-				bytes[p++] = QOI_RUN_16 | run >> 8;
-				bytes[p++] = run;
-			}
+
 			run = 0;
 		}
 
@@ -341,35 +371,93 @@ void *qoi_encode(const void *data, int w, int h, int channels, int *out_len) {
 				int vb = px.rgba.b - px_prev.rgba.b;
 				int va = px.rgba.a - px_prev.rgba.a;
 
-				if (
-					vr > -16 && vr < 17 && vg > -16 && vg < 17 && 
-					vb > -16 && vb < 17 && va > -16 && va < 17
-				) {
+				if (mode == 0)
+				{
+					// color mode
 					if (
-						va == 0 && vr > -2 && vr < 3 &&
-						vg > -2 && vg < 3 && vb > -2 && vb < 3
+						va == 0 && QOI_RANGE(vr, 64) &&
+						 QOI_RANGE(vg, 64) && QOI_RANGE(vb, 32)
 					) {
-						bytes[p++] = QOI_DIFF_8 | ((vr + 1) << 4) | (vg + 1) << 2 | (vb + 1);
-					}
-					else if (
-						va == 0 && vr > -16 && vr < 17 && 
-						vg > -8 && vg < 9 && vb > -8 && vb < 9
-					) {
-						bytes[p++] = QOI_DIFF_16 | (vr + 15);
-						bytes[p++] = ((vg + 7) << 4) | (vb + 7);
+						if (
+							QOI_RANGE(vr, 2) &&
+							QOI_RANGE(vg, 2) && QOI_RANGE(vb, 2)
+						) {
+							bytes[p++] = QOI_DIFF_8 | ((vr + 2) << 4) | (vg + 2) << 2 | (vb + 2);
+						}
+						else if (
+							QOI_RANGE(vr, 16) &&
+							QOI_RANGE(vg, 16) && QOI_RANGE(vb, 8)
+						) {
+							unsigned int value =
+								(QOI_DIFF_16 << 8) | ((vr + 16) << 9) |
+								((vg + 16) << 4) | (vb + 8);
+							bytes[p++] = (unsigned char)(value >> 8);
+							bytes[p++] = (unsigned char)(value);
+						}
+						else {
+							// better to encode color?
+							if (1 + (vr != 0) + (vg != 0) + (vb != 0) + (va != 0) < 3)
+								goto encodecolor;
+
+							unsigned int value =
+								(QOI_DIFF_24 << 16) | ((vr + 64) << 13) |
+								((vg + 64) << 6) | (vb + 32);
+
+							bytes[p++] = (unsigned char)(value >> 16);
+							bytes[p++] = (unsigned char)(value >> 8);
+							bytes[p++] = (unsigned char)(value);
+						}
 					}
 					else {
-						bytes[p++] = QOI_DIFF_24 | ((vr + 15) >> 1);
-						bytes[p++] = ((vr + 15) << 7) | ((vg + 15) << 2) | ((vb + 15) >> 3);
-						bytes[p++] = ((vb + 15) << 5) | (va + 15);
+						goto encodecolor;
 					}
 				}
-				else {
-					bytes[p++] = QOI_COLOR | (vr?8:0)|(vg?4:0)|(vb?2:0)|(va?1:0);
-					if (vr) { bytes[p++] = px.rgba.r; }
-					if (vg) { bytes[p++] = px.rgba.g; }
-					if (vb) { bytes[p++] = px.rgba.b; }
-					if (va) { bytes[p++] = px.rgba.a; }
+				else
+				{
+					// alpha mode
+					if (
+						QOI_RANGE(vr, 16) && QOI_RANGE(vg, 16) &&
+						QOI_RANGE(vb, 16) && QOI_RANGE(va, 16)
+					) {
+						if (
+							va == 0 && QOI_RANGE(vr, 2) &&
+							QOI_RANGE(vg, 2) && QOI_RANGE(vb, 2)
+						) {
+							bytes[p++] = QOI_DIFF_8 | ((vr + 2) << 4) | (vg + 2) << 2 | (vb + 2);
+						}
+						else if (
+							QOI_RANGE(va, 2) && QOI_RANGE(vr, 8) &&
+							QOI_RANGE(vg, 8) && QOI_RANGE(vb, 8)
+						) {
+							unsigned int value =
+								(QOI_DIFF_16 << 8) | ((va + 2) << 12) | ((vr + 8) << 8) |
+								((vg + 8) << 4) | (vb + 8);
+
+							bytes[p++] = (unsigned char)(value >> 8);
+							bytes[p++] = (unsigned char)(value);
+						}
+						else {
+							// better to encode color?
+							if (1 + (vr != 0) + (vg != 0) + (vb != 0) + (va != 0) < 3)
+								goto encodecolor;
+
+							unsigned int value =
+								(QOI_DIFF_24 << 16) | ((va + 16) << 15) | ((vr + 16) << 10) |
+								((vg + 16) << 5) | (vb + 16);
+
+							bytes[p++] = (unsigned char)(value >> 16);
+							bytes[p++] = (unsigned char)(value >> 8);
+							bytes[p++] = (unsigned char)(value);
+						}
+					}
+					else {
+					encodecolor:
+						bytes[p++] = QOI_COLOR | (vr?8:0)|(vg?4:0)|(vb?2:0)|(va?1:0);
+						if (vr) { bytes[p++] = px.rgba.r; }
+						if (vg) { bytes[p++] = px.rgba.g; }
+						if (vb) { bytes[p++] = px.rgba.b; }
+						if (va) { bytes[p++] = px.rgba.a; }
+					}
 				}
 			}
 		}
@@ -418,6 +506,7 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 	qoi_rgba_t index[64] = {0};
 
 	int run = 0;
+	int mode = 0;
 	int chunks_len = size - QOI_PADDING;
 	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
@@ -430,32 +519,60 @@ void *qoi_decode(const void *data, int size, int *out_w, int *out_h, int channel
 				px = index[b1 ^ QOI_INDEX];
 			}
 			else if ((b1 & QOI_MASK_3) == QOI_RUN_8) {
-				run = (b1 & 0x1f);
-			}
-			else if ((b1 & QOI_MASK_3) == QOI_RUN_16) {
-				int b2 = bytes[p++];
-				run = (((b1 & 0x1f) << 8) | (b2)) + 32;
+				run = b1 & 0x1f;
+				while (p < chunks_len && ((b1 = bytes[p]) & QOI_MASK_3) == QOI_RUN_8)
+				{
+					p++;
+					run <<= 5;
+					run += b1 & 0x1f;
+				}
+				// no need to increment here, one implied copy
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_DIFF_8) {
-				px.rgba.r += ((b1 >> 4) & 0x03) - 1;
-				px.rgba.g += ((b1 >> 2) & 0x03) - 1;
-				px.rgba.b += ( b1       & 0x03) - 1;
+				px.rgba.r += ((b1 >> 4) & 0x03) - 2;
+				px.rgba.g += ((b1 >> 2) & 0x03) - 2;
+				px.rgba.b += ( b1       & 0x03) - 2;
 			}
-			else if ((b1 & QOI_MASK_3) == QOI_DIFF_16) {
-				int b2 = bytes[p++];
-				px.rgba.r += (b1 & 0x1f) - 15;
-				px.rgba.g += (b2 >> 4) - 7;
-				px.rgba.b += (b2 & 0x0f) - 7;
+			else if ((b1 & QOI_MASK_2) == QOI_DIFF_16) {
+				b1 = (b1 << 8) + bytes[p++];
+
+				if (mode == 0) {
+					px.rgba.r += ((b1 >> 9) & 0x1f) - 16;
+					px.rgba.g += ((b1 >> 4) & 0x1f) - 16;
+					px.rgba.b += (b1 & 0x0f) - 8;
+				}
+				else {
+					px.rgba.r += ((b1 >> 8) & 0x0f) - 8;
+					px.rgba.g += ((b1 >> 4) & 0x0f) - 8;
+					px.rgba.b += (b1 & 0x0f) - 8;
+					px.rgba.a += ((b1 >> 12) & 0x03) - 2;
+				}
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_DIFF_24) {
-				int b2 = bytes[p++];
-				int b3 = bytes[p++];
-				px.rgba.r += (((b1 & 0x0f) << 1) | (b2 >> 7)) - 15;
-				px.rgba.g +=  ((b2 & 0x7c) >> 2) - 15;
-				px.rgba.b += (((b2 & 0x03) << 3) | ((b3 & 0xe0) >> 5)) - 15;
-				px.rgba.a +=   (b3 & 0x1f) - 15;
+				b1 <<= 16;
+				b1 |= bytes[p++] << 8;
+				b1 |= bytes[p++];
+
+				if (mode == 0) {
+					px.rgba.r += ((b1 >> 13) & 0x7f) - 64;
+					px.rgba.g += ((b1 >> 6) & 0x7f) - 64;
+					px.rgba.b += (b1 & 0x3f) - 32;
+				}
+				else {
+					px.rgba.r += ((b1 >> 10) & 0x1f) - 16;
+					px.rgba.g += ((b1 >> 5) & 0x1f) - 16;
+					px.rgba.b += (b1 & 0x1f) - 16;
+					px.rgba.a += ((b1 >> 15) & 0x1f) - 16;
+				}
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_COLOR) {
+				if ((b1 & 15) == 0)
+				{
+					// mode switch
+					mode ^= 1;
+					px_pos -= channels;
+					continue;
+				}
 				if (b1 & 8) { px.rgba.r = bytes[p++]; }
 				if (b1 & 4) { px.rgba.g = bytes[p++]; }
 				if (b1 & 2) { px.rgba.b = bytes[p++]; }
