@@ -109,54 +109,78 @@ index matches the current pixel, this index position is written to the stream.
 Each chunk starts with a 2, 3 or 4 bit tag, followed by a number of data bits. 
 The bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned.
 
-QOI_INDEX {
-	u8 tag  :  2;   // b00
-	u8 idx  :  6;   // 6-bit index into the color index array: 0..63
-}
+The possible chunks are:
 
-QOI_RUN_8 {
-	u8 tag  :  3;   // b010
-	u8 run  :  5;   // 5-bit run-length repeating the previous pixel: 1..32
-}
+	|        QOI_INDEX        |
+	|        Byte + 0         |
+	|  7  6  5  4  3  2  1  0 |
+	|-------------------------|
+	|  0  0 i5 i4 i3 i2 i1 i0 |
 
-QOI_RUN_16 {
-	u8 tag  :  3;   // b011
-	u16 run : 13;   // 13-bit run-length repeating the previous pixel: 33..8224
-}
+		i5...i0 forming the 6-bit index into the color index array: 0..63
 
-QOI_DIFF_8 {
-	u8 tag  :  2;   // b10
-	u8 dr   :  2;   // 2-bit   red channel difference: -2..1
-	u8 dg   :  2;   // 2-bit green channel difference: -2..1
-	u8 db   :  2;   // 2-bit  blue channel difference: -2..1
-}
 
-QOI_DIFF_16 {
-	u8 tag  :  3;   // b110
-	u8 dr   :  5;   // 5-bit   red channel difference: -16..15
-	u8 dg   :  4;   // 4-bit green channel difference:  -8.. 7
-	u8 db   :  4;   // 4-bit  blue channel difference:  -8.. 7
-}
+	|        QOI_INDEX        |
+	|        Byte + 0         |
+	|  7  6  5  4  3  2  1  0 |
+	|-------------------------|
+	|  0  1  0 i4 i3 i2 i1 i0 |
 
-QOI_DIFF_24 {
-	u8 tag  :  4;   // b1110
-	u8 dr   :  5;   // 5-bit   red channel difference: -16..15
-	u8 dg   :  5;   // 5-bit green channel difference: -16..15
-	u8 db   :  5;   // 5-bit  blue channel difference: -16..15
-	u8 da   :  5;   // 5-bit alpha channel difference: -16..15
-}
+		i4...i0 forming the 5-bit run-length repeating the previous pixel: 1..32
 
-QOI_COLOR {
-	u8 tag  :  4;   // b1111
-	u8 has_r:  1;   //   red byte follows
-	u8 has_g:  1;   // green byte follows
-	u8 has_b:  1;   //  blue byte follows
-	u8 has_a:  1;   // alpha byte follows
-	u8 r;           //   red value if has_r == 1: 0..255
-	u8 g;           // green value if has_g == 1: 0..255
-	u8 b;           //  blue value if has_b == 1: 0..255
-	u8 a;           // alpha value if has_a == 1: 0..255
-}
+
+	|                        QOI_RUN_16                        |
+	|            Byte + 0            |        Byte + 1         |
+	|  7   6   5   4   3   2   1   0 |  7  6  5  4  3  2  1  0 |
+	|--------------------------------|-------------------------|
+	|  0   1   1 r12 r11 r10  r9  r8 | r7 r6 r5 r4 r3 r2 r1 r0 |
+
+		r12...r0 forming the 13-bit run-length repeating the previous pixel: 33..8224
+
+
+	|       QOI_DIFF_8        |
+	|        Byte + 0         |
+	|  7  6  5  4  3  2  1  0 |
+	|-------------------------|
+	|  1  0 r1 r0 g1 g0 b1 b0 |
+
+		r1...r0 forming the red channel difference between -2..1
+		g1...g0 forming the green channel difference between -2..1
+		b1...b0 forming the blue channel difference between -2..1
+
+
+	|                    QOI_DIFF_16                    |
+	|        Byte + 0         |        Byte + 1         |
+	|  7  6  5  4  3  2  1  0 |  7  6  5  4  3  2  1  0 |
+	|-------------------------|-------------------------|
+	|  1  1  0 r4 r3 r2 r1 r0 | g3 g2 g1 g0 b3 b2 b1 b0 |
+
+		r4...r0 forming the red channel difference between -16..15
+		g3...g0 forming the green channel difference between -8..7
+		b3...b0 forming the blue channel difference between -8..7
+
+
+	|                                 QOI_DIFF_24                                 |
+	|        Byte + 0         |        Byte + 1         |        Byte + 1         |
+	|  7  6  5  4  3  2  1  0 |  7  6  5  4  3  2  1  0 |  7  6  5  4  3  2  1  0 |
+	|-------------------------|-------------------------|-------------------------|
+	|  1  1  1  0 r4 r3 r2 r1 | r0 g4 g3 g2 g1 g0 b4 b3 | b2 b1 b0 a4 a3 a2 a1 a0 |
+
+			r4...r0 forming the red channel difference between -16..15
+			g4...g0 forming the green channel difference between -16..15
+			b4...b0 forming the blue channel difference between -16..15
+			a4...a0 forming the alpha channel difference between -16..15
+
+
+	|        QOI_COLOR        |
+	|        Byte + 0         |
+	|  7  6  5  4  3  2  1  0 |
+	|-------------------------|
+	|  1  1  1  1  r  g  b  a |
+
+		for each set bit r, g, b and a another byte follows in the order written here. If such a byte follows,
+		it will replace the current color channel value with the value of this byte.
+
 
 The byte stream is padded with 4 zero bytes. Size the longest chunk we can
 encounter is 5 bytes (QOI_COLOR with RGBA set), with this padding we just have 
