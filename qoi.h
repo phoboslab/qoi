@@ -584,20 +584,21 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 #include <stdio.h>
 
 int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
-	int size;
-	void *encoded = qoi_encode(data, desc, &size);
-	if (!encoded) {
+	FILE *f = fopen(filename, "wb");
+	if (!f) {
 		return 0;
 	}
 
-	FILE *f = fopen(filename, "wb");
-	if (!f) {
-		QOI_FREE(encoded);
+	int size;
+	void *encoded = qoi_encode(data, desc, &size);
+	if (!encoded) {
+		fclose(f);
 		return 0;
-	}
+	}	
 	
 	fwrite(encoded, 1, size, f);
 	fclose(f);
+	
 	QOI_FREE(encoded);
 	return size;
 }
