@@ -148,6 +148,9 @@ The possible chunks are:
 		g1...g0 forming the green channel difference between -2..1
 		b1...b0 forming the blue channel difference between -2..1
 
+		The difference to the current channel values are using a wraparound operation, so "1 - 2" will result in 255, while
+		"255 + 1" will result in 0.
+
 
 	|                    QOI_DIFF_16                    |
 	|        Byte + 0         |        Byte + 1         |
@@ -159,6 +162,9 @@ The possible chunks are:
 		g3...g0 forming the green channel difference between -8..7
 		b3...b0 forming the blue channel difference between -8..7
 
+		The difference to the current channel values are using a wraparound operation, so "10 - 13" will result in 253, while
+		"250 + 7" will result in 1.
+
 
 	|                                 QOI_DIFF_24                                 |
 	|        Byte + 0         |        Byte + 1         |        Byte + 1         |
@@ -166,10 +172,13 @@ The possible chunks are:
 	|-------------------------|-------------------------|-------------------------|
 	|  1  1  1  0 r4 r3 r2 r1 | r0 g4 g3 g2 g1 g0 b4 b3 | b2 b1 b0 a4 a3 a2 a1 a0 |
 
-			r4...r0 forming the red channel difference between -16..15
-			g4...g0 forming the green channel difference between -16..15
-			b4...b0 forming the blue channel difference between -16..15
-			a4...a0 forming the alpha channel difference between -16..15
+		r4...r0 forming the red channel difference between -16..15
+		g4...g0 forming the green channel difference between -16..15
+		b4...b0 forming the blue channel difference between -16..15
+		a4...a0 forming the alpha channel difference between -16..15
+
+		The difference to the current channel values are using a wraparound operation, so "10 - 13" will result in 253, while
+		"250 + 7" will result in 1.
 
 
 	|        QOI_COLOR        |
