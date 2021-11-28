@@ -32,3 +32,8 @@ fits in about 300 lines of C.
 converts between png <> qoi
  - [qoibench.c](https://github.com/phoboslab/qoi/blob/master/qoibench.c)
 a simple wrapper to benchmark stbi, libpng and qoi
+
+## Packages
+
+[AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
+
