@@ -385,8 +385,10 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	
 	int px_len = desc->width * desc->height * desc->channels;
 	int px_end = px_len - desc->channels;
-	for (int px_pos = 0; px_pos < px_len; px_pos += desc->channels) {
-		if (desc->channels == 4) {
+	int channels = desc->channels;
+
+	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
+		if (channels == 4) {
 			px = *(qoi_rgba_t *)(pixels + px_pos);
 		}
 		else {
