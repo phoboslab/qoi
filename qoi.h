@@ -229,7 +229,7 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels);
 // failed) or a pointer to the encoded data on success. On success the out_len 
 // is set to the size in bytes of the encoded data.
 
-// The returned qoi data should be free()d after user.
+// The returned qoi data should be free()d after use.
 
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
 
