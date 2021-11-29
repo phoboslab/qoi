@@ -33,6 +33,22 @@ converts between png <> qoi
  - [qoibench.c](https://github.com/phoboslab/qoi/blob/master/qoibench.c)
 a simple wrapper to benchmark stbi, libpng and qoi
 
+
+## Tools
+
+- https://github.com/floooh/qoiview
+
+
+## Implementations of QOI
+
+- https://github.com/MasterQ32/zig-qoi (Zig)
+- https://github.com/steven-joruk/qoi (Rust)
+- https://github.com/ChevyRay/qoi_rs (Rust)
+- https://github.com/xfmoulet/qoi (Go)
+- https://github.com/panzi/jsqoi (TypeScript)
+- https://github.com/pfusik/qoi-ci (Ć)
+
+
 ## Packages
 
 [AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
