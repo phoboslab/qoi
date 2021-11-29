@@ -384,6 +384,9 @@ benchmark_result_t benchmark_image(const char *path, int runs) {
 	BENCHMARK_FN(runs, res.qoi.decode_time, {
 		qoi_desc desc;
 		void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &desc, 4);
+		if ((i == 0) && memcmp(dec_p, pixels, w*h*4)) {
+			ERROR("QOI encode/decode round trip was not lossless");
+		}
 		free(dec_p);
 	});
 

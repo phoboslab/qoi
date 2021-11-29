@@ -519,24 +519,56 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	qoi_rgba_t px = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t index[64] = {0};
 
-	int run = 0;
 	int chunks_len = size - QOI_PADDING;
-	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
-		if (run > 0) {
-			run--;
-		}
-		else if (p < chunks_len) {
+	for (int px_pos = 0; px_pos < px_len; ) {
+		if (p < chunks_len) {
 			int b1 = bytes[p++];
 
 			if ((b1 & QOI_MASK_2) == QOI_INDEX) {
 				px = index[b1 ^ QOI_INDEX];
 			}
 			else if ((b1 & QOI_MASK_3) == QOI_RUN_8) {
-				run = (b1 & 0x1f);
+				int run = (b1 & 0x1f) + 1;
+				if (run * channels > px_len - px_pos) {
+					run = (px_len - px_pos) / channels;
+				}
+				if (channels == 4) {
+					while (run--) {
+						*(qoi_rgba_t*)(pixels + px_pos) = px;
+						px_pos += 4;
+					}
+				}
+				else {
+					while (run--) {
+						pixels[px_pos+0] = px.rgba.r;
+						pixels[px_pos+1] = px.rgba.g;
+						pixels[px_pos+2] = px.rgba.b;
+						px_pos += 3;
+					}
+				}
+				continue;
 			}
 			else if ((b1 & QOI_MASK_3) == QOI_RUN_16) {
 				int b2 = bytes[p++];
-				run = (((b1 & 0x1f) << 8) | (b2)) + 32;
+				int run = (((b1 & 0x1f) << 8) | (b2)) + 33;
+				if (run * channels > px_len - px_pos) {
+					run = (px_len - px_pos) / channels;
+				}
+				if (channels == 4) {
+					while (run--) {
+						*(qoi_rgba_t*)(pixels + px_pos) = px;
+						px_pos += 4;
+					}
+				}
+				else {
+					while (run--) {
+						pixels[px_pos+0] = px.rgba.r;
+						pixels[px_pos+1] = px.rgba.g;
+						pixels[px_pos+2] = px.rgba.b;
+						px_pos += 3;
+					}
+				}
+				continue;
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_DIFF_8) {
 				px.rgba.r += ((b1 >> 4) & 0x03) - 2;
@@ -567,13 +599,15 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			index[QOI_COLOR_HASH(px) % 64] = px;
 		}
 
-		if (channels == 4) { 
+		if (channels == 4) {
 			*(qoi_rgba_t*)(pixels + px_pos) = px;
+			px_pos += 4;
 		}
 		else {
-			pixels[px_pos] = px.rgba.r;
+			pixels[px_pos+0] = px.rgba.r;
 			pixels[px_pos+1] = px.rgba.g;
 			pixels[px_pos+2] = px.rgba.b;
+			px_pos += 3;
 		}
 	}
 
