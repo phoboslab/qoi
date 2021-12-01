@@ -189,7 +189,7 @@ typedef struct {
 void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	libpng_read_t *read_data = (libpng_read_t*)png_get_io_ptr(png);
 	if (read_data->pos + length > read_data->size) {
-		ERROR("PNG read %d bytes at pos %d (size: %d)", length, read_data->pos, read_data->size);
+		ERROR("PNG read %d bytes at pos %d (size: %d)", (int)length, read_data->pos, read_data->size);
 	}
 	memcpy(data, read_data->data + read_data->pos, length);
 	read_data->pos += length;
@@ -432,7 +432,7 @@ void benchmark_print_result(const char *head, benchmark_result_t res) {
 		(double)res.libpng.encode_time/1000000.0, 
 		(res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time/1000.0) : 0),
 		(res.libpng.encode_time > 0 ? px / ((double)res.libpng.encode_time/1000.0) : 0),
-		res.libpng.size/1024
+		(int)(res.libpng.size/1024)
 	);
 	printf(
 		"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", 
@@ -440,7 +440,7 @@ void benchmark_print_result(const char *head, benchmark_result_t res) {
 		(double)res.stbi.encode_time/1000000.0,
 		(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
 		(res.stbi.encode_time > 0 ? px / ((double)res.stbi.encode_time/1000.0) : 0),
-		res.stbi.size/1024
+		(int)(res.stbi.size/1024)
 	);
 	printf(
 		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8d\n", 
@@ -448,7 +448,7 @@ void benchmark_print_result(const char *head, benchmark_result_t res) {
 		(double)res.qoi.encode_time/1000000.0,
 		(res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time/1000.0) : 0),
 		(res.qoi.encode_time > 0 ? px / ((double)res.qoi.encode_time/1000.0) : 0),
-		res.qoi.size/1024
+		(int)(res.qoi.size/1024)
 	);
 	printf("\n");
 }
@@ -459,9 +459,6 @@ int main(int argc, char **argv) {
 		printf("Example: qoibench 10 images/textures/\n");
 		exit(1);
 	}
-
-	float total_percentage = 0;
-	int total_size = 0;
 
 	benchmark_result_t totals = {0};
 
