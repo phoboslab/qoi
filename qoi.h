@@ -32,7 +32,7 @@ QOI encodes and decodes images in a lossless format. An encoded QOI image is
 usually around 10--30% larger than a decently optimized PNG image.
 
 QOI outperforms simpler PNG encoders in compression ratio and performance. QOI
-images are typically 20% smaller than PNGs written with stbi_image. Encoding is 
+images are typically 20% smaller than PNGs written with stbi_image. Encoding is
 25-50x faster and decoding is 3-4x faster than stbi_image or libpng.
 
 
@@ -88,7 +88,7 @@ struct qoi_header_t {
 	uint32_t height;     // image height in pixels (BE)
 	uint8_t  channels;   // must be 3 (RGB) or 4 (RGBA)
 	uint8_t  colorspace; // a bitmap 0000rgba where
-                         //	- a zero bit indicates sRGBA, 
+                         //	- a zero bit indicates sRGBA,
                          //	- a one bit indicates linear (user interpreted)
                          //	colorspace for each channel
 };
@@ -105,7 +105,7 @@ and decoder. Each pixel that is seen by the encoder and decoder is put into this
 array at the position (r^g^b^a) % 64. In the encoder, if the pixel value at this
 index matches the current pixel, this index position is written to the stream.
 
-Each chunk starts with a 2, 3 or 4 bit tag, followed by a number of data bits. 
+Each chunk starts with a 2, 3 or 4 bit tag, followed by a number of data bits.
 The bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned.
 All values encoded in these data bits have the most significant bit (MSB) on the
 left.
@@ -125,11 +125,11 @@ The possible chunks are:
  - QOI_RUN ---------------
 |         Byte[0]         |
 |  7  6  5  4  3  2  1  0 |
-|-------+-----------------|
-|  0  1 |       run       |
+|-------------+-----------|
+|  1  1  0  1 |    run    |
 
-2-bit tag b01
-6-bit run-length repeating the previous pixel: 1..64
+4-bit tag b1101
+4-bit run-length repeating the previous pixel: 1..16
 
 
  - QOI_DIFF_8 ------------
@@ -143,7 +143,7 @@ The possible chunks are:
 2-bit green channel difference from the previous pixel between -2..1
 2-bit  blue channel difference from the previous pixel between -2..1
 
-The difference to the current channel values are using a wraparound operation, 
+The difference to the current channel values are using a wraparound operation,
 so "1 - 2" will result in 255, while "255 + 1" will result in 0.
 
 
@@ -158,26 +158,26 @@ so "1 - 2" will result in 255, while "255 + 1" will result in 0.
 4-bit green channel difference from the previous pixel between -8..7
 4-bit  blue channel difference from the previous pixel between -8..7
 
-The difference to the current channel values are using a wraparound operation, 
+The difference to the current channel values are using a wraparound operation,
 so "5 - 8" will result in 253, while "250 + 7" will result in 1.
 
 
  - QOI_GDIFF_16 ------------------------------------
 |         Byte[0]         |         Byte[1]         |
 |  7  6  5  4  3  2  1  0 |  7  6  5  4  3  2  1  0 |
-|-------------+--------+-------------------+--------|
-|  1  1  0  1 |  dr-dg |    green diff     |  db-dg |
+|-------+-----------------+-------------+-----------|
+|  0  1 |   green diff    |    dr-dg    |   db-dg   |
 
-4-bit tag b1101
-3-bit   red channel difference minus green channel difference -4..3
+2-bit tag b01
 6-bit green channel difference from the previous pixel -32..31
-3-bit  blue channel difference minus green channel difference -4..3
+4-bit   red channel difference minus green channel difference -4..3
+4-bit  blue channel difference minus green channel difference -4..3
 
 The green channel is used to indicate the general direction of change and gets
 a few more bits. dr and db base their diffs off of the green channel diff. E.g.
   dr = (last_px.r - cur_px.r) - (last_px.g - cur_px.g)
 
-The difference to the current channel values are using a wraparound operation, 
+The difference to the current channel values are using a wraparound operation,
 so "10 - 13" will result in 253, while "250 + 7" will result in 1.
 
 
@@ -193,7 +193,7 @@ so "10 - 13" will result in 253, while "250 + 7" will result in 1.
 5-bit  blue channel difference from the previous pixel between -16..15
 5-bit alpha channel difference from the previous pixel between -16..15
 
-The difference to the current channel values are using a wraparound operation, 
+The difference to the current channel values are using a wraparound operation,
 so "10 - 13" will result in 253, while "250 + 7" will result in 1.
 
 
@@ -235,9 +235,9 @@ extern "C" {
 // describes either the input format (for qoi_write, qoi_encode), or is filled
 // with the description read from the file header (for qoi_read, qoi_decode).
 
-// The colorspace in this qoi_desc is a bitmap with 0000rgba where a 0-bit 
-// indicates sRGB and a 1-bit indicates linear colorspace for each channel. You 
-// may use one of the predefined constants: QOI_SRGB, QOI_SRGB_LINEAR_ALPHA or 
+// The colorspace in this qoi_desc is a bitmap with 0000rgba where a 0-bit
+// indicates sRGB and a 1-bit indicates linear colorspace for each channel. You
+// may use one of the predefined constants: QOI_SRGB, QOI_SRGB_LINEAR_ALPHA or
 // QOI_LINEAR. The colorspace is purely informative. It will be saved to the
 // file header, but does not affect en-/decoding in any way.
 
@@ -254,11 +254,11 @@ typedef struct {
 
 #ifndef QOI_NO_STDIO
 
-// Encode raw RGB or RGBA pixels into a QOI image and write it to the file 
-// system. The qoi_desc struct must be filled with the image width, height, 
-// number of channels (3 = RGB, 4 = RGBA) and the colorspace. 
+// Encode raw RGB or RGBA pixels into a QOI image and write it to the file
+// system. The qoi_desc struct must be filled with the image width, height,
+// number of channels (3 = RGB, 4 = RGBA) and the colorspace.
 
-// The function returns 0 on failure (invalid parameters, or fopen or malloc 
+// The function returns 0 on failure (invalid parameters, or fopen or malloc
 // failed) or the number of bytes written on success.
 
 int qoi_write(const char *filename, const void *data, const qoi_desc *desc);
@@ -269,7 +269,7 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc);
 // output format will be forced into this number of channels.
 
 // The function either returns NULL on failure (invalid data, or malloc or fopen
-// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
+// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct
 // will be filled with the description from the file header.
 
 // The returned pixel data should be free()d after use.
@@ -281,8 +281,8 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels);
 
 // Encode raw RGB or RGBA pixels into a QOI image in memory.
 
-// The function either returns NULL on failure (invalid parameters or malloc 
-// failed) or a pointer to the encoded data on success. On success the out_len 
+// The function either returns NULL on failure (invalid parameters or malloc
+// failed) or a pointer to the encoded data on success. On success the out_len
 // is set to the size in bytes of the encoded data.
 
 // The returned qoi data should be free()d after use.
@@ -292,8 +292,8 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
 
 // Decode a QOI image from memory.
 
-// The function either returns NULL on failure (invalid parameters or malloc 
-// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
+// The function either returns NULL on failure (invalid parameters or malloc
+// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct
 // is filled with the description from the file header.
 
 // The returned pixel data should be free()d after use.
@@ -319,10 +319,10 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 #endif
 
 #define QOI_INDEX     0x00 // 00xxxxxx
-#define QOI_RUN       0x40 // 01xxxxxx
+#define QOI_RUN       0xd0 // 1101xxxx
 #define QOI_DIFF_8    0x80 // 10xxxxxx
 #define QOI_DIFF_16   0xc0 // 1100xxxx
-#define QOI_GDIFF_16  0xd0 // 1101xxxx
+#define QOI_GDIFF_16  0x40 // 01xxxxxx
 #define QOI_DIFF_24   0xe0 // 1110xxxx
 #define QOI_COLOR     0xf0 // 1111xxxx
 
@@ -366,8 +366,8 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		return NULL;
 	}
 
-	int max_size = 
-		desc->width * desc->height * (desc->channels + 1) + 
+	int max_size =
+		desc->width * desc->height * (desc->channels + 1) +
 		QOI_HEADER_SIZE + QOI_PADDING;
 
 	int p = 0;
@@ -390,7 +390,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	int run = 0;
 	qoi_rgba_t px_prev = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t px = px_prev;
-	
+
 	int px_len = desc->width * desc->height * desc->channels;
 	int px_end = px_len - desc->channels;
 	int channels = desc->channels;
@@ -409,15 +409,15 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 			run++;
 		}
 
-		if (run > 0 && 
+		if (run > 0 &&
 			(px.v != px_prev.v || px_pos == px_end)
 		) {
 			int start = p;
 			--run;
 			do
 			{
-				bytes[p++] = QOI_RUN | (run & 0x3f);
-				run >>= 6;
+				bytes[p++] = QOI_RUN | (run & 0xf);
+				run >>= 4;
 			} while (run > 0);
 
 			// swap to make big endian
@@ -448,35 +448,35 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 				char vg_b = vb - vg;
 
 				if (
-					va == 0 && 
+					va == 0 &&
 					vr > -3 && vr < 2 &&
-					vg > -3 && vg < 2 && 
+					vg > -3 && vg < 2 &&
 					vb > -3 && vb < 2
 				) {
 					bytes[p++] = QOI_DIFF_8 | ((vr + 2) << 4) | (vg + 2) << 2 | (vb + 2);
 				}
 				else if (
-					va == 0 && 
-					vr > -9 && vr < 8 && 
-					vg > -9 && vg < 8 && 
+					va == 0 &&
+					vr > -9 && vr < 8 &&
+					vg > -9 && vg < 8 &&
 					vb > -9 && vb < 8
 				) {
 					bytes[p++] = QOI_DIFF_16   | (vr + 8);
 					bytes[p++] = (vg + 8) << 4 | (vb + 8);
 				}
 				else if (
-					va == 0 && 
-					vg_r >  -5 && vg_r <  4 && 
-					vg   > -33 && vg   < 32 && 
-					vg_b >  -5 && vg_b <  4
+					va == 0 &&
+					vg_r >  -9 && vg_r <  8 &&
+					vg   > -33 && vg   < 32 &&
+					vg_b >  -9 && vg_b <  8
 				) {
-					bytes[p++] = QOI_GDIFF_16   | (vg_r + 4) << 1 | (vg + 32) >> 5;
-					bytes[p++] = (vg + 32) << 3 | (vg_b + 4);
+					bytes[p++] = QOI_GDIFF_16 | (vg + 32);
+					bytes[p++] = (vg_r + 4) << 4 | (vg_b + 4);
 				}
 				else if (
-					vr > -17 && vr < 16 && 
-					vg > -17 && vg < 16 && 
-					vb > -17 && vb < 16 && 
+					vr > -17 && vr < 16 &&
+					vg > -17 && vg < 16 &&
+					vb > -17 && vb < 16 &&
 					va > -17 && va < 16
 				) {
 					bytes[p++] = QOI_DIFF_24    | (vr + 16) >> 1;
@@ -522,7 +522,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	desc->colorspace = bytes[p++];
 
 	if (
-		desc->width == 0 || desc->height == 0 || 
+		desc->width == 0 || desc->height == 0 ||
 		desc->channels < 3 || desc->channels > 4 ||
 		header_magic != QOI_MAGIC
 	) {
@@ -551,16 +551,16 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		else if (p < chunks_len) {
 			int b1 = bytes[p++];
 
-			if ((b1 & QOI_MASK_2) == QOI_INDEX) {
+			if ((b1 & QOI_MASK_4) == QOI_INDEX) {
 				px = index[b1 ^ QOI_INDEX];
 			}
-			else if ((b1 & QOI_MASK_2) == QOI_RUN) {
-				run = (b1 & 0x3f);
+			else if ((b1 & QOI_MASK_4) == QOI_RUN) {
+				run = (b1 & 0xf);
 				while (p < chunks_len && ((b1 = bytes[p]) & QOI_MASK_2) == QOI_RUN)
 				{
 					p++;
-					run <<= 6;
-					run += b1 & 0x3f;
+					run <<= 4;
+					run += b1 & 0xf;
 				}
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_DIFF_8) {
@@ -574,12 +574,12 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 				px.rgba.g += (b2 >> 4)   - 8;
 				px.rgba.b += (b2 & 0x0f) - 8;
 			}
-			else if ((b1 & QOI_MASK_4) == QOI_GDIFF_16) {
+			else if ((b1 & QOI_MASK_2) == QOI_GDIFF_16) {
 				int b2 = bytes[p++];
-				int vg = ((b1 & 0x01) << 5 | (b2 & 0xf8) >> 3) - 32;
-				px.rgba.r += vg - 4 + ((b1 & 0x0e) >> 1);
+				int vg = (b1 & 0x3f) - 32;
+				px.rgba.r += vg - 8 + (b1 & 0xf0);
 				px.rgba.g += vg;
-				px.rgba.b += vg - 4 +  (b2 & 0x07);
+				px.rgba.b += vg - 8 + (b2 & 0x0f);
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_DIFF_24) {
 				int b2 = bytes[p++];
@@ -599,7 +599,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			index[QOI_COLOR_HASH(px) % 64] = px;
 		}
 
-		if (channels == 4) { 
+		if (channels == 4) {
 			*(qoi_rgba_t*)(pixels + px_pos) = px;
 		}
 		else {
@@ -627,10 +627,10 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 		fclose(f);
 		return 0;
 	}
-	
+
 	fwrite(encoded, 1, size, f);
 	fclose(f);
-	
+
 	QOI_FREE(encoded);
 	return size;
 }
