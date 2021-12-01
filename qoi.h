@@ -479,7 +479,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 					vb > -17 && vb < 16 && 
 					va > -17 && va < 16
 				) {
-					bytes[p++] = QOI_DIFF_24	| (vr + 16) >> 1;
+					bytes[p++] = QOI_DIFF_24    | (vr + 16) >> 1;
 					bytes[p++] = (vr + 16) << 7 | (vg + 16) << 2 | (vb + 16) >> 3;
 					bytes[p++] = (vb + 16) << 5 | (va + 16);
 				}
@@ -566,7 +566,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			else if ((b1 & QOI_MASK_2) == QOI_DIFF_8) {
 				px.rgba.r += ((b1 >> 4) & 0x03) - 2;
 				px.rgba.g += ((b1 >> 2) & 0x03) - 2;
-				px.rgba.b += ( b1	   & 0x03) - 2;
+				px.rgba.b += ( b1       & 0x03) - 2;
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_DIFF_16) {
 				int b2 = bytes[p++];
