@@ -555,12 +555,12 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 				px = index[b1 ^ QOI_INDEX];
 			}
 			else if ((b1 & QOI_MASK_4) == QOI_RUN) {
-				run = (b1 & 0xf);
-				while (p < chunks_len && ((b1 = bytes[p]) & QOI_MASK_2) == QOI_RUN)
+				run = (b1 & 0x0f);
+				while (p < chunks_len && ((b1 = bytes[p]) & QOI_MASK_4) == QOI_RUN)
 				{
 					p++;
 					run <<= 4;
-					run += b1 & 0xf;
+					run += b1 & 0x0f;
 				}
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_DIFF_8) {
@@ -577,7 +577,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			else if ((b1 & QOI_MASK_2) == QOI_GDIFF_16) {
 				int b2 = bytes[p++];
 				int vg = (b1 & 0x3f) - 32;
-				px.rgba.r += vg - 8 + (b1 & 0xf0);
+				px.rgba.r += vg - 8 + (b2 & 0xf0);
 				px.rgba.g += vg;
 				px.rgba.b += vg - 8 + (b2 & 0x0f);
 			}
