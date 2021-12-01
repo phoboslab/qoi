@@ -626,7 +626,7 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	if (!encoded) {
 		fclose(f);
 		return 0;
-	}   
+	}
 	
 	fwrite(encoded, 1, size, f);
 	fclose(f);
