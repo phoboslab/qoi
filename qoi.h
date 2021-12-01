@@ -471,7 +471,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 					vg_b >  -9 && vg_b <  8
 				) {
 					bytes[p++] = QOI_GDIFF_16 | (vg + 32);
-					bytes[p++] = (vg_r + 4) << 4 | (vg_b + 4);
+					bytes[p++] = (vg_r + 8) << 4 | (vg_b + 8);
 				}
 				else if (
 					vr > -17 && vr < 16 &&
