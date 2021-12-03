@@ -146,7 +146,7 @@ The possible chunks are:
 |         Byte[0]         |
 |  7  6  5  4  3  2  1  0 |
 |-------+-----+-----+-----|
-|  1  0 |  dr |  db |  bg |
+|  1  0 |  dr |  dg |  db |
 
 2-bit tag b10
 2-bit   red channel difference from the previous pixel between -2..1
