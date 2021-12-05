@@ -47,6 +47,7 @@ a simple wrapper to benchmark stbi, libpng and qoi
 - https://github.com/panzi/jsqoi (TypeScript)
 - https://github.com/pfusik/qoi-ci (Ć)
 - https://github.com/kodonnell/qoi (Python)
+- https://github.com/NUlliiON/QoiSharp (C#)
 
 
 ## Packages
