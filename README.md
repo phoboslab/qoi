@@ -42,6 +42,7 @@ a simple wrapper to benchmark stbi, libpng and qoi
 - https://github.com/MasterQ32/zig-qoi (Zig)
 - https://github.com/steven-joruk/qoi (Rust)
 - https://github.com/ChevyRay/qoi_rs (Rust)
+- https://github.com/zakarumych/rapid-qoi (Rust)
 - https://github.com/xfmoulet/qoi (Go)
 - https://github.com/panzi/jsqoi (TypeScript)
 - https://github.com/pfusik/qoi-ci (Ć)
