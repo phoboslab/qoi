@@ -320,6 +320,7 @@ int opt_noverify = 0;
 int opt_nodecode = 0;
 int opt_noencode = 0;
 int opt_norecurse = 0;
+int opt_onlytotals = 0;
 
 
 typedef struct {
@@ -411,6 +412,7 @@ benchmark_result_t benchmark_image(const char *path) {
 	int h;
 
 	// Load the encoded PNG, encoded QOI and raw pixels into memory
+
 	void *pixels = (void *)stbi_load(path, &w, &h, NULL, 4);
 	void *encoded_png = fload(path, &encoded_png_size);
 	void *encoded_qoi = qoi_encode(pixels, &(qoi_desc){
@@ -425,6 +427,7 @@ benchmark_result_t benchmark_image(const char *path) {
 	}
 
 	// Verify QOI Output
+
 	if (!opt_noverify) {
 		qoi_desc dc;
 		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, 4);
@@ -433,6 +436,8 @@ benchmark_result_t benchmark_image(const char *path) {
 		}
 		free(pixels_qoi);
 	}
+
+
 
 	benchmark_result_t res = {0};
 	res.count = 1;
@@ -549,8 +554,10 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 		
 		benchmark_result_t res = benchmark_image(file_path);
 
-		printf("## %s size: %dx%d\n", file_path, res.w, res.h);
-		benchmark_print_result(res);
+		if (!opt_onlytotals) {
+			printf("## %s size: %dx%d\n", file_path, res.w, res.h);
+			benchmark_print_result(res);
+		}
 
 		free(file_path);
 		
@@ -598,6 +605,7 @@ int main(int argc, char **argv) {
 		printf("    --noencode ... don't run encoders\n");
 		printf("    --nodecode ... don't run decoders\n");
 		printf("    --norecurse .. don't descend into directories\n");
+		printf("    --onlytotals . don't print individual image results\n");
 		printf("Examples\n");
 		printf("    qoibench 10 images/textures/\n");
 		printf("    qoibench 1 images/textures/ --nopng --nowarmup\n");
@@ -611,6 +619,7 @@ int main(int argc, char **argv) {
 		else if (strcmp(argv[i], "--noencode") == 0) { opt_noencode = 1; }
 		else if (strcmp(argv[i], "--nodecode") == 0) { opt_nodecode = 1; }
 		else if (strcmp(argv[i], "--norecurse") == 0) { opt_norecurse = 1; }
+		else if (strcmp(argv[i], "--onlytotals") == 0) { opt_onlytotals = 1; }
 		else { ERROR("Unknown option %s", argv[i]); }
 	}
 
