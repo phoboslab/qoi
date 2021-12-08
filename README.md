@@ -48,6 +48,7 @@ a simple wrapper to benchmark stbi, libpng and qoi
 - https://github.com/pfusik/qoi-ci (Ć)
 - https://github.com/kodonnell/qoi (Python)
 - https://github.com/rbino/qoix (Elixir)
+- https://github.com/elihwyma/Swift-QOI (Swift)
 
 
 ## Packages
