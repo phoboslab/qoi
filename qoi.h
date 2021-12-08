@@ -80,7 +80,8 @@ you can define QOI_MALLOC and QOI_FREE before including this library.
 
 -- Data Format
 
-A QOI file has a 14 byte header, followed by any number of data "chunks".
+A QOI file has a 14 byte header, followed by any number of data "chunks" and 8
+zero bytes to mark the end of the data stream.
 
 struct qoi_header_t {
 	char     magic[4];   // magic bytes "qoif"
@@ -196,9 +197,11 @@ are occupied by the QOI_OP_RGB and QOI_OP_RGBA tags.
 8-bit alpha channel value
 
 
-The byte stream is padded at the end with 4 zero bytes. Size the longest legal 
+The byte stream is padded at the end with 8 zero bytes. Since the longest legal 
 chunk is 5 bytes (QOI_OP_RGBA), with this padding it is possible to check for an
-overrun only once per decode loop iteration.
+overrun only once per decode loop iteration. These 0x00 bytes also mark the end
+of the data stream, as an encoder should never produce 8 consecutive zero bytes
+within the stream.
 
 */
 
@@ -314,7 +317,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
 #define QOI_HEADER_SIZE 14
-#define QOI_PADDING 4
+#define QOI_PADDING 8
 
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
