@@ -95,22 +95,21 @@ The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
 pixel value. Pixels are either encoded as
  - a run of the previous pixel
  - an index into a previously seen pixel
- - a difference to the previous pixel value in r,g,b,a
- - full r,g,b,a values
+ - a difference to the previous pixel value in r,g,b
+ - full r,g,b or r,g,b,a values
 
 A running array[64] of previously seen pixel values is maintained by the encoder
 and decoder. Each pixel that is seen by the encoder and decoder is put into this
-array at the position (r * 3 + g * 5 + b * 7) % 64. In the encoder, if the pixel
-value at this index matches the current pixel, this index position is written to
-the stream.
+array at the position (r * 3 + g * 5 + b * 7 + a * 11) % 64. In the encoder, if
+the pixel value at this index matches the current pixel, this index position is 
+written to the stream as QOI_OP_INDEX.
 
-Each chunk starts with a 8 or 2 bit tag, followed by a number of data bits. 
-The bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned.
-All values encoded in these data bits have the most significant bit (MSB) on the
-left.
+Each chunk starts with a 2 or 8 bit tag, followed by a number of data bits. The 
+bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned. All 
+values encoded in these data bits have the most significant bit on the left.
 
-The 8-bit tags have precedence over the 2-bit tags. A decoder must check the 
-8-bit tags first.
+The 8-bit tags have precedence over the 2-bit tags. A decoder must check for the
+presence of an 8-bit tag first.
 
 
 The possible chunks are:
@@ -216,15 +215,16 @@ within the stream.
 extern "C" {
 #endif
 
-// A pointer to qoi_desc struct has to be supplied to all of qoi's functions. It
-// describes either the input format (for qoi_write, qoi_encode), or is filled
-// with the description read from the file header (for qoi_read, qoi_decode).
+// A pointer to a qoi_desc struct has to be supplied to all of qoi's functions. 
+// It describes either the input format (for qoi_write and qoi_encode), or is 
+// filled with the description read from the file header (for qoi_read and
+// qoi_decode).
 
 // The colorspace in this qoi_desc is an enum where 
 //   0 = sRGB, i.e. gamma scaled RGB channels and a linear alpha channel
 //   1 = all channels are linear
-// You may use the the constants QOI_SRGB or QOI_LINEAR. The colorspace is 
-// purely informative. It will be saved to the file header, but does not affect
+// You may use the constants QOI_SRGB or QOI_LINEAR. The colorspace is purely 
+// informative. It will be saved to the file header, but does not affect
 // en-/decoding in any way.
 
 #define QOI_SRGB   0
@@ -312,7 +312,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 
 #define QOI_MASK_2    0xc0 // 11000000
 
-#define QOI_COLOR_HASH(C) (C.rgba.r * 3 + C.rgba.g * 5 + C.rgba.b * 7 + C.rgba.a * 11)
+#define QOI_COLOR_HASH(C) (C.rgba.r*3 + C.rgba.g*5 + C.rgba.b*7 + C.rgba.a*11)
 #define QOI_MAGIC \
 	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
@@ -422,7 +422,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 						vg > -3 && vg < 2 && 
 						vb > -3 && vb < 2
 					) {
-						bytes[p++] = QOI_OP_DIFF | ((vr + 2) << 4) | (vg + 2) << 2 | (vb + 2);
+						bytes[p++] = QOI_OP_DIFF | (vr + 2) << 4 | (vg + 2) << 2 | (vb + 2);
 					}
 					else if (
 						vg_r >  -9 && vg_r <  8 && 
