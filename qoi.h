@@ -344,7 +344,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		data == NULL || out_len == NULL || desc == NULL ||
 		desc->width == 0 || desc->height == 0 ||
 		desc->channels < 3 || desc->channels > 4 ||
-		(desc->colorspace & 0xf0) != 0
+		desc->colorspace > 2
 	) {
 		return NULL;
 	}
@@ -480,6 +480,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	if (
 		desc->width == 0 || desc->height == 0 || 
 		desc->channels < 3 || desc->channels > 4 ||
+		desc->colorspace > 2 ||
 		header_magic != QOI_MAGIC
 	) {
 		return NULL;
