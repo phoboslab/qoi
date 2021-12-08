@@ -168,7 +168,7 @@ so "10 - 13" will result in 253, while "250 + 7" will result in 1.
 |-------+-----------------|
 |  1  1 |       run       |
 
-2-bit tag b01
+2-bit tag b11
 6-bit run-length repeating the previous pixel: 1..62
 Note that the run-lengths 63 and 64 (b111110 and b111111) are illegal as they
 are occupied by the QOI_OP_RGB and QOI_OP_RGBA tags.
