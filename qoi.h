@@ -87,10 +87,7 @@ struct qoi_header_t {
 	uint32_t width;      // image width in pixels (BE)
 	uint32_t height;     // image height in pixels (BE)
 	uint8_t  channels;   // must be 3 (RGB) or 4 (RGBA)
-	uint8_t  colorspace; // a bitmap 0000rgba where
-	                     //   - a zero bit indicates sRGBA, 
-	                     //   - a one bit indicates linear (user interpreted)
-	                     //   colorspace for each channel
+	uint8_t  colorspace; // 0 = sRGB with linear alpha, 1 = all channels linear
 };
 
 The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
@@ -220,15 +217,15 @@ extern "C" {
 // describes either the input format (for qoi_write, qoi_encode), or is filled
 // with the description read from the file header (for qoi_read, qoi_decode).
 
-// The colorspace in this qoi_desc is a bitmap with 0000rgba where a 0-bit 
-// indicates sRGB and a 1-bit indicates linear colorspace for each channel. You 
-// may use one of the predefined constants: QOI_SRGB, QOI_SRGB_LINEAR_ALPHA or 
-// QOI_LINEAR. The colorspace is purely informative. It will be saved to the
-// file header, but does not affect en-/decoding in any way.
+// The colorspace in this qoi_desc is an enum where 
+//   0 = sRGB, i.e. gamma scaled RGB channels and a linear alpha channel
+//   1 = all channels are linear
+// You may use the the constants QOI_SRGB or QOI_LINEAR. The colorspace is 
+// purely informative. It will be saved to the file header, but does not affect
+// en-/decoding in any way.
 
-#define QOI_SRGB 0x00
-#define QOI_SRGB_LINEAR_ALPHA 0x01
-#define QOI_LINEAR 0x0f
+#define QOI_SRGB   0
+#define QOI_LINEAR 1
 
 typedef struct {
 	unsigned int width;
