@@ -81,35 +81,43 @@ you can define QOI_MALLOC and QOI_FREE before including this library.
 -- Data Format
 
 A QOI file has a 14 byte header, followed by any number of data "chunks" and 8
-zero bytes to mark the end of the data stream.
+zero-bytes to mark the end of the data stream.
 
 struct qoi_header_t {
 	char     magic[4];   // magic bytes "qoif"
 	uint32_t width;      // image width in pixels (BE)
 	uint32_t height;     // image height in pixels (BE)
-	uint8_t  channels;   // must be 3 (RGB) or 4 (RGBA)
+	uint8_t  channels;   // 3 = RGB, 4 = RGBA
 	uint8_t  colorspace; // 0 = sRGB with linear alpha, 1 = all channels linear
 };
 
 The decoder and encoder start with {r: 0, g: 0, b: 0, a: 0} as the previous
 pixel value. Pixels are either encoded as
  - a run of the previous pixel
- - an index into a previously seen pixel
+ - an index into an array of previously seen pixels
  - a difference to the previous pixel value in r,g,b
  - full r,g,b or r,g,b,a values
 
-A running array[64] of previously seen pixel values is maintained by the encoder
-and decoder. Each pixel that is seen by the encoder and decoder is put into this
-array at the position (r * 3 + g * 5 + b * 7 + a * 11) % 64. In the encoder, if
-the pixel value at this index matches the current pixel, this index position is 
-written to the stream as QOI_OP_INDEX.
+The color channels are assumed to not be premultiplied with the alpha channel 
+(“un-premultiplied alpha”).
 
-Each chunk starts with a 2 or 8 bit tag, followed by a number of data bits. The 
+A running array[64] (zero-initialized) of previously seen pixel values is 
+maintained by the encoder and decoder. Each pixel that is seen by the encoder
+and decoder is put into this array at the position formed by a hash function of
+the color value. In the encoder, if the pixel value at the index matches the
+current pixel, this index position is written to the stream as QOI_OP_INDEX. 
+The hash function for the index is:
+
+  index_position = (r * 3 + g * 5 + b * 7 + a * 11) % 64
+
+Each chunk starts with a 2- or 8-bit tag, followed by a number of data bits. The 
 bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned. All 
 values encoded in these data bits have the most significant bit on the left.
 
 The 8-bit tags have precedence over the 2-bit tags. A decoder must check for the
 presence of an 8-bit tag first.
+
+The byte stream is padded with 8 zero-bytes at the end.
 
 
 The possible chunks are:
@@ -139,8 +147,10 @@ The possible chunks are:
 The difference to the current channel values are using a wraparound operation, 
 so "1 - 2" will result in 255, while "255 + 1" will result in 0.
 
+Values are stored as unsigned integers with a bias of 2. E.g. -2 is stored as 
+0 (b00). 1 is stored as 3 (b11).
 
- - QOI_OP_LUMA -------------------------------------
+
 |         Byte[0]         |         Byte[1]         |
 |  7  6  5  4  3  2  1  0 |  7  6  5  4  3  2  1  0 |
 |-------+-----------------+-------------+-----------|
@@ -151,12 +161,17 @@ so "1 - 2" will result in 255, while "255 + 1" will result in 0.
 4-bit   red channel difference minus green channel difference -8..7
 4-bit  blue channel difference minus green channel difference -8..7
 
-The green channel is used to indicate the general direction of change and gets
-a few more bits. dr and db base their diffs off of the green channel diff. E.g.
-  dr = (last_px.r - cur_px.r) - (last_px.g - cur_px.g)
+The green channel is used to indicate the general direction of change and is 
+encoded in 6 bits. The red and green channels (dr and db) base their diffs off
+of the green channel difference and are encoded in 4 bits. I.e.:
+  dr_dg = (last_px.r - cur_px.r) - (last_px.g - cur_px.g)
+  db_dg = (last_px.b - cur_px.b) - (last_px.g - cur_px.g)
 
 The difference to the current channel values are using a wraparound operation, 
 so "10 - 13" will result in 253, while "250 + 7" will result in 1.
+
+Values are stored as unsigned integers with a bias of 32 for the green channel 
+and a bias of 8 for the red and blue channel.
 
 
  - QOI_OP_RUN ------------
@@ -167,8 +182,10 @@ so "10 - 13" will result in 253, while "250 + 7" will result in 1.
 
 2-bit tag b11
 6-bit run-length repeating the previous pixel: 1..62
-Note that the run-lengths 63 and 64 (b111110 and b111111) are illegal as they
-are occupied by the QOI_OP_RGB and QOI_OP_RGBA tags.
+
+The run-length is stored with a bias of 1. Note that the run-lengths 63 and 64 
+(b111110 and b111111) are illegal as they are occupied by the QOI_OP_RGB and 
+QOI_OP_RGBA tags.
 
 
  - QOI_OP_RGB ------------------------------------------
