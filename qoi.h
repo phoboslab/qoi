@@ -123,22 +123,22 @@ The byte stream is padded with 8 zero-bytes at the end.
 The possible chunks are:
 
 
- - QOI_OP_INDEX ----------
+.- QOI_OP_INDEX ----------.
 |         Byte[0]         |
 |  7  6  5  4  3  2  1  0 |
 |-------+-----------------|
 |  0  0 |     index       |
-
+`-------------------------`
 2-bit tag b00
 6-bit index into the color index array: 0..63
 
 
- - QOI_OP_DIFF -----------
+.- QOI_OP_DIFF -----------. 
 |         Byte[0]         |
 |  7  6  5  4  3  2  1  0 |
 |-------+-----+-----+-----|
 |  0  1 |  dr |  dg |  db |
-
+`-------------------------`
 2-bit tag b01
 2-bit   red channel difference from the previous pixel between -2..1
 2-bit green channel difference from the previous pixel between -2..1
@@ -151,11 +151,12 @@ Values are stored as unsigned integers with a bias of 2. E.g. -2 is stored as
 0 (b00). 1 is stored as 3 (b11).
 
 
+.- QOI_OP_LUMA -------------------------------------. 
 |         Byte[0]         |         Byte[1]         |
 |  7  6  5  4  3  2  1  0 |  7  6  5  4  3  2  1  0 |
 |-------+-----------------+-------------+-----------|
 |  1  0 |  green diff     |   dr - dg   |  db - dg  |
-
+`---------------------------------------------------`
 2-bit tag b10
 6-bit green channel difference from the previous pixel -32..31
 4-bit   red channel difference minus green channel difference -8..7
@@ -174,12 +175,12 @@ Values are stored as unsigned integers with a bias of 32 for the green channel
 and a bias of 8 for the red and blue channel.
 
 
- - QOI_OP_RUN ------------
+.- QOI_OP_RUN ------------.
 |         Byte[0]         |
 |  7  6  5  4  3  2  1  0 |
 |-------+-----------------|
 |  1  1 |       run       |
-
+`-------------------------`
 2-bit tag b11
 6-bit run-length repeating the previous pixel: 1..62
 
@@ -188,24 +189,24 @@ The run-length is stored with a bias of 1. Note that the run-lengths 63 and 64
 QOI_OP_RGBA tags.
 
 
- - QOI_OP_RGB ------------------------------------------
+.- QOI_OP_RGB ------------------------------------------.
 |         Byte[0]         | Byte[1] | Byte[2] | Byte[3] |
 |  7  6  5  4  3  2  1  0 | 7 .. 0  | 7 .. 0  | 7 .. 0  |
 |-------------------------+---------+---------+---------|
 |  1  1  1  1  1  1  1  0 |   red   |  green  |  blue   |
-
+`-------------------------------------------------------`
 8-bit tag b11111110
 8-bit   red channel value
 8-bit green channel value
 8-bit  blue channel value
 
 
-- QOI_OP_RGBA ----------------------------------------------------
+.- QOI_OP_RGBA ---------------------------------------------------.
 |         Byte[0]         | Byte[1] | Byte[2] | Byte[3] | Byte[4] |
 |  7  6  5  4  3  2  1  0 | 7 .. 0  | 7 .. 0  | 7 .. 0  | 7 .. 0  |
 |-------------------------+---------+---------+---------+---------|
 |  1  1  1  1  1  1  1  1 |   red   |  green  |  blue   |  alpha  |
-
+`-----------------------------------------------------------------`
 8-bit tag b11111111
 8-bit   red channel value
 8-bit green channel value
