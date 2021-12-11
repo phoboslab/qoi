@@ -11,10 +11,8 @@ More info at https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compressi
 
 ⚠️ 2021.11.30 – the file format is not yet finalized. We're still working to fix
 some smaller issues. The final specification will be announced on 2021.12.20.
-Thanks for your patience! https://github.com/phoboslab/qoi/issues/48
-
-These specification changes are ~~not yet reflected in the code here~~ 
-reflected in qoi.h now. 
+Thanks for your patience! The WIP file format specification can be found in
+[qoi.h](https://github.com/phoboslab/qoi/blob/master/qoi.h)
 
 
 ## Why?
