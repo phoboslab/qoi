@@ -77,6 +77,9 @@ QOI_NO_STDIO before including this library.
 This library uses malloc() and free(). To supply your own malloc implementation
 you can define QOI_MALLOC and QOI_FREE before including this library.
 
+This library uses memset() to zero arrayb. To supply your own implementation
+you can define QOI_ZEROARR before including this library.
+
 
 -- Data Format
 
@@ -315,10 +318,14 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 
 #ifdef QOI_IMPLEMENTATION
 #include <stdlib.h>
+#include <string.h>
 
 #ifndef QOI_MALLOC
 	#define QOI_MALLOC(sz) malloc(sz)
 	#define QOI_FREE(p)    free(p)
+#endif
+#ifndef QOI_ZEROARR
+#	define QOI_ZEROARR(_arr) memset((_arr),0,sizeof(_arr))
 #endif
 
 #define QOI_OP_INDEX  0x00 // 00xxxxxx
@@ -358,6 +365,13 @@ unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
 }
 
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
+	int i, max_size, p, run;
+	int px_len, px_end, px_pos, channels;
+	unsigned char *bytes;
+	const unsigned char *pixels;
+	qoi_rgba_t index[64];
+	qoi_rgba_t px, px_prev;
+
 	if (
 		data == NULL || out_len == NULL || desc == NULL ||
 		desc->width == 0 || desc->height == 0 ||
@@ -367,12 +381,12 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		return NULL;
 	}
 
-	int max_size = 
+	max_size = 
 		desc->width * desc->height * (desc->channels + 1) + 
 		QOI_HEADER_SIZE + QOI_PADDING;
 
-	int p = 0;
-	unsigned char *bytes = QOI_MALLOC(max_size);
+	p = 0;
+	bytes = (unsigned char *) QOI_MALLOC(max_size);
 	if (!bytes) {
 		return NULL;
 	}
@@ -384,19 +398,22 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	bytes[p++] = desc->colorspace;
 
 
-	const unsigned char *pixels = (const unsigned char *)data;
+	pixels = (const unsigned char *)data;
 
-	qoi_rgba_t index[64] = {0};
+	QOI_ZEROARR(index);
 
-	int run = 0;
-	qoi_rgba_t px_prev = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
-	qoi_rgba_t px = px_prev;
+	run = 0;
+	px_prev.rgba.r = 0;
+	px_prev.rgba.g = 0;
+	px_prev.rgba.b = 0;
+	px_prev.rgba.a = 255;
+	px = px_prev;
 	
-	int px_len = desc->width * desc->height * desc->channels;
-	int px_end = px_len - desc->channels;
-	int channels = desc->channels;
+	px_len = desc->width * desc->height * desc->channels;
+	px_end = px_len - desc->channels;
+	channels = desc->channels;
 
-	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
+	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (channels == 4) {
 			px = *(qoi_rgba_t *)(pixels + px_pos);
 		}
@@ -414,12 +431,14 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 			}
 		}
 		else  {
+			int index_pos;
+
 			if (run > 0) {
 				bytes[p++] = QOI_OP_RUN | (run - 1);
 				run = 0;
 			}
 
-			int index_pos = QOI_COLOR_HASH(px) % 64;
+			index_pos = QOI_COLOR_HASH(px) % 64;
 
 			if (index[index_pos].v == px.v) {
 				bytes[p++] = QOI_OP_INDEX | index_pos;
@@ -469,7 +488,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		px_prev = px;
 	}
 
-	for (int i = 0; i < QOI_PADDING; i++) {
+	for (i = 0; i < QOI_PADDING; i++) {
 		bytes[p++] = 0;
 	}
 
@@ -478,6 +497,14 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 }
 
 void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
+	const unsigned char *bytes;
+	unsigned int header_magic;
+	unsigned char *pixels;
+	qoi_rgba_t index[64];
+	qoi_rgba_t px;
+	int px_len,  chunks_len, px_pos;
+	int p = 0, run = 0;
+
 	if (
 		data == NULL || desc == NULL ||
 		(channels != 0 && channels != 3 && channels != 4) ||
@@ -486,10 +513,9 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		return NULL;
 	}
 
-	const unsigned char *bytes = (const unsigned char *)data;
-	int p = 0;
+	bytes = (const unsigned char *)data;
 
-	unsigned int header_magic = qoi_read_32(bytes, &p);
+	header_magic = qoi_read_32(bytes, &p);
 	desc->width = qoi_read_32(bytes, &p);
 	desc->height = qoi_read_32(bytes, &p);
 	desc->channels = bytes[p++];
@@ -508,18 +534,20 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		channels = desc->channels;
 	}
 
-	int px_len = desc->width * desc->height * channels;
-	unsigned char *pixels = QOI_MALLOC(px_len);
+	px_len = desc->width * desc->height * channels;
+	pixels = (unsigned char *) QOI_MALLOC(px_len);
 	if (!pixels) {
 		return NULL;
 	}
 
-	qoi_rgba_t px = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
-	qoi_rgba_t index[64] = {0};
+	QOI_ZEROARR(index);
+	px.rgba.r = 0;
+	px.rgba.g = 0;
+	px.rgba.b = 0;
+	px.rgba.a = 255;
 
-	int run = 0;
-	int chunks_len = size - QOI_PADDING;
-	for (int px_pos = 0; px_pos < px_len; px_pos += channels) {
+	chunks_len = size - QOI_PADDING;
+	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
 			run--;
 		}
@@ -577,12 +605,14 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 
 int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 	FILE *f = fopen(filename, "wb");
+	int size;
+	void *encoded;
+
 	if (!f) {
 		return 0;
 	}
 
-	int size;
-	void *encoded = qoi_encode(data, desc, &size);
+	encoded = qoi_encode(data, desc, &size);
 	if (!encoded) {
 		fclose(f);
 		return 0;
@@ -597,24 +627,27 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 
 void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 	FILE *f = fopen(filename, "rb");
+	int size, bytes_read;
+	void *pixels, *data;
+
 	if (!f) {
 		return NULL;
 	}
 
 	fseek(f, 0, SEEK_END);
-	int size = ftell(f);
+	size = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
-	void *data = QOI_MALLOC(size);
+	data = QOI_MALLOC(size);
 	if (!data) {
 		fclose(f);
 		return NULL;
 	}
 
-	int bytes_read = fread(data, 1, size, f);
+	bytes_read = fread(data, 1, size, f);
 	fclose(f);
 
-	void *pixels = qoi_decode(data, bytes_read, desc, channels);
+	pixels = qoi_decode(data, bytes_read, desc, channels);
 	QOI_FREE(data);
 	return pixels;
 }
