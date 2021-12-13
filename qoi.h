@@ -447,12 +447,12 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 				index[index_pos] = px;
 
 				if (px.rgba.a == px_prev.rgba.a) {
-					char vr = px.rgba.r - px_prev.rgba.r;
-					char vg = px.rgba.g - px_prev.rgba.g;
-					char vb = px.rgba.b - px_prev.rgba.b;
+					signed char vr = px.rgba.r - px_prev.rgba.r;
+					signed char vg = px.rgba.g - px_prev.rgba.g;
+					signed char vb = px.rgba.b - px_prev.rgba.b;
 
-					char vg_r = vr - vg;
-					char vg_b = vb - vg;
+					signed char vg_r = vr - vg;
+					signed char vg_b = vb - vg;
 
 					if (
 						vr > -3 && vr < 2 &&
