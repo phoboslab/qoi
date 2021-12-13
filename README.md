@@ -49,6 +49,7 @@ a simple wrapper to benchmark stbi, libpng and qoi
 - https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/rbino/qoix (Elixir)
 - https://github.com/elihwyma/Swift-QOI (Swift)
+- https://github.com/saharNooby/qoi-java (Java)
 
 
 ## Packages
