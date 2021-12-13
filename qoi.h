@@ -77,8 +77,8 @@ QOI_NO_STDIO before including this library.
 This library uses malloc() and free(). To supply your own malloc implementation
 you can define QOI_MALLOC and QOI_FREE before including this library.
 
-This library uses memset() to zero arrayb. To supply your own implementation
-you can define QOI_ZEROARR before including this library.
+This library uses memset() to zero-initialize the index. To supply your own 
+implementation you can define QOI_ZEROARR before including this library.
 
 
 -- Data Format
@@ -325,7 +325,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 	#define QOI_FREE(p)    free(p)
 #endif
 #ifndef QOI_ZEROARR
-#	define QOI_ZEROARR(_arr) memset((_arr),0,sizeof(_arr))
+	#define QOI_ZEROARR(_arr) memset((_arr),0,sizeof(_arr))
 #endif
 
 #define QOI_OP_INDEX  0x00 // 00xxxxxx
