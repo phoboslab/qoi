@@ -226,8 +226,8 @@ within the stream.
 */
 
 
-// -----------------------------------------------------------------------------
-// Header - Public functions
+/* -----------------------------------------------------------------------------
+Header - Public functions */
 
 #ifndef QOI_H
 #define QOI_H
@@ -236,17 +236,17 @@ within the stream.
 extern "C" {
 #endif
 
-// A pointer to a qoi_desc struct has to be supplied to all of qoi's functions. 
-// It describes either the input format (for qoi_write and qoi_encode), or is 
-// filled with the description read from the file header (for qoi_read and
-// qoi_decode).
+/* A pointer to a qoi_desc struct has to be supplied to all of qoi's functions. 
+It describes either the input format (for qoi_write and qoi_encode), or is 
+filled with the description read from the file header (for qoi_read and
+qoi_decode).
 
-// The colorspace in this qoi_desc is an enum where 
-//   0 = sRGB, i.e. gamma scaled RGB channels and a linear alpha channel
-//   1 = all channels are linear
-// You may use the constants QOI_SRGB or QOI_LINEAR. The colorspace is purely 
-// informative. It will be saved to the file header, but does not affect
-// en-/decoding in any way.
+The colorspace in this qoi_desc is an enum where 
+  0 = sRGB, i.e. gamma scaled RGB channels and a linear alpha channel
+  1 = all channels are linear
+You may use the constants QOI_SRGB or QOI_LINEAR. The colorspace is purely 
+informative. It will be saved to the file header, but does not affect
+en-/decoding in any way. */
 
 #define QOI_SRGB   0
 #define QOI_LINEAR 1
@@ -260,49 +260,49 @@ typedef struct {
 
 #ifndef QOI_NO_STDIO
 
-// Encode raw RGB or RGBA pixels into a QOI image and write it to the file 
-// system. The qoi_desc struct must be filled with the image width, height, 
-// number of channels (3 = RGB, 4 = RGBA) and the colorspace. 
+/* Encode raw RGB or RGBA pixels into a QOI image and write it to the file 
+system. The qoi_desc struct must be filled with the image width, height, 
+number of channels (3 = RGB, 4 = RGBA) and the colorspace. 
 
-// The function returns 0 on failure (invalid parameters, or fopen or malloc 
-// failed) or the number of bytes written on success.
+The function returns 0 on failure (invalid parameters, or fopen or malloc 
+failed) or the number of bytes written on success. */
 
 int qoi_write(const char *filename, const void *data, const qoi_desc *desc);
 
 
-// Read and decode a QOI image from the file system. If channels is 0, the
-// number of channels from the file header is used. If channels is 3 or 4 the
-// output format will be forced into this number of channels.
+/* Read and decode a QOI image from the file system. If channels is 0, the
+number of channels from the file header is used. If channels is 3 or 4 the
+output format will be forced into this number of channels.
 
-// The function either returns NULL on failure (invalid data, or malloc or fopen
-// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
-// will be filled with the description from the file header.
+The function either returns NULL on failure (invalid data, or malloc or fopen
+failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
+will be filled with the description from the file header.
 
-// The returned pixel data should be free()d after use.
+The returned pixel data should be free()d after use. */
 
 void *qoi_read(const char *filename, qoi_desc *desc, int channels);
 
-#endif // QOI_NO_STDIO
+#endif /* QOI_NO_STDIO */
 
 
-// Encode raw RGB or RGBA pixels into a QOI image in memory.
+/* Encode raw RGB or RGBA pixels into a QOI image in memory.
 
-// The function either returns NULL on failure (invalid parameters or malloc 
-// failed) or a pointer to the encoded data on success. On success the out_len 
-// is set to the size in bytes of the encoded data.
+The function either returns NULL on failure (invalid parameters or malloc 
+failed) or a pointer to the encoded data on success. On success the out_len 
+is set to the size in bytes of the encoded data.
 
-// The returned qoi data should be free()d after use.
+The returned qoi data should be free()d after use. */
 
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
 
 
-// Decode a QOI image from memory.
+/* Decode a QOI image from memory.
 
-// The function either returns NULL on failure (invalid parameters or malloc 
-// failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
-// is filled with the description from the file header.
+The function either returns NULL on failure (invalid parameters or malloc 
+failed) or a pointer to the decoded pixels. On success, the qoi_desc struct 
+is filled with the description from the file header.
 
-// The returned pixel data should be free()d after use.
+The returned pixel data should be free()d after use. */
 
 void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 
@@ -310,11 +310,11 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 #ifdef __cplusplus
 }
 #endif
-#endif // QOI_H
+#endif /* QOI_H */
 
 
-// -----------------------------------------------------------------------------
-// Implementation
+/* -----------------------------------------------------------------------------
+Implementation */
 
 #ifdef QOI_IMPLEMENTATION
 #include <stdlib.h>
@@ -328,14 +328,14 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 	#define QOI_ZEROARR(_arr) memset((_arr),0,sizeof(_arr))
 #endif
 
-#define QOI_OP_INDEX  0x00 // 00xxxxxx
-#define QOI_OP_DIFF   0x40 // 01xxxxxx
-#define QOI_OP_LUMA   0x80 // 10xxxxxx
-#define QOI_OP_RUN    0xc0 // 11xxxxxx
-#define QOI_OP_RGB    0xfe // 11111110
-#define QOI_OP_RGBA   0xff // 11111111
+#define QOI_OP_INDEX  0x00 /* 00xxxxxx */
+#define QOI_OP_DIFF   0x40 /* 01xxxxxx */
+#define QOI_OP_LUMA   0x80 /* 10xxxxxx */
+#define QOI_OP_RUN    0xc0 /* 11xxxxxx */
+#define QOI_OP_RGB    0xfe /* 11111110 */
+#define QOI_OP_RGBA   0xff /* 11111111 */
 
-#define QOI_MASK_2    0xc0 // 11000000
+#define QOI_MASK_2    0xc0 /* 11000000 */
 
 #define QOI_COLOR_HASH(C) (C.rgba.r*3 + C.rgba.g*5 + C.rgba.b*7 + C.rgba.a*11)
 #define QOI_MAGIC \
@@ -652,5 +652,5 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 	return pixels;
 }
 
-#endif // QOI_NO_STDIO
-#endif // QOI_IMPLEMENTATION
+#endif /* QOI_NO_STDIO */
+#endif /* QOI_IMPLEMENTATION */
