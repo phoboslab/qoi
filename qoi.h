@@ -91,7 +91,7 @@ struct qoi_header_t {
 	uint8_t  colorspace; // 0 = sRGB with linear alpha, 1 = all channels linear
 };
 
-The decoder and encoder start with {r: 0, g: 0, b: 0, a: 0} as the previous
+The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
 pixel value. Pixels are either encoded as
  - a run of the previous pixel
  - an index into an array of previously seen pixels
@@ -389,7 +389,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	qoi_rgba_t index[64] = {0};
 
 	int run = 0;
-	qoi_rgba_t px_prev = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 0}};
+	qoi_rgba_t px_prev = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t px = px_prev;
 	
 	int px_len = desc->width * desc->height * desc->channels;
@@ -514,7 +514,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		return NULL;
 	}
 
-	qoi_rgba_t px = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 0}};
+	qoi_rgba_t px = {.rgba = {.r = 0, .g = 0, .b = 0, .a = 255}};
 	qoi_rgba_t index[64] = {0};
 
 	int run = 0;
