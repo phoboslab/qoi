@@ -62,13 +62,13 @@ int main(int argc, char **argv) {
 			printf("Couldn't read header %s\n", argv[1]);
 			exit(1);
 		}
-		if(channels < 3) {// Force all odd encodings to be RGBA
+
+		// Force all odd encodings to be RGBA
+		if(channels != 3) {
 			channels = 4;
-			pixels = (void *)stbi_load(argv[1], &w, &h, NULL, 4);
 		}
-		else {
-			pixels = (void *)stbi_load(argv[1], &w, &h, &channels, 0);
-		}
+
+		pixels = (void *)stbi_load(argv[1], &w, &h, NULL, channels);
 	}
 	else if (STR_ENDS_WITH(argv[1], ".qoi")) {
 		qoi_desc desc;

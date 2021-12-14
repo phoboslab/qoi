@@ -152,7 +152,7 @@ void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 		info,
 		w, h,
 		8,
-		(channels==3)?PNG_COLOR_TYPE_RGB:PNG_COLOR_TYPE_RGBA,
+		channels == 3 ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGBA,
 		PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT,
 		PNG_FILTER_TYPE_DEFAULT
@@ -417,7 +417,9 @@ benchmark_result_t benchmark_image(const char *path) {
 		ERROR("Error decoding header %s", path);
 	}
 
-	channels = (channels == 3) ? 3 : 4;
+	if (channels != 3) {
+		channels = 4;
+	}
 
 	void *pixels = (void *)stbi_load(path, &w, &h, NULL, channels);
 	void *encoded_png = fload(path, &encoded_png_size);

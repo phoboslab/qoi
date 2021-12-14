@@ -111,7 +111,7 @@ the color value. In the encoder, if the pixel value at the index matches the
 current pixel, this index position is written to the stream as QOI_OP_INDEX. 
 The hash function for the index is:
 
-  index_position = (r * 3 + g * 5 + b * 7 + a * 11) % 64
+	index_position = (r * 3 + g * 5 + b * 7 + a * 11) % 64
 
 Each chunk starts with a 2- or 8-bit tag, followed by a number of data bits. The 
 bit length of chunks is divisible by 8 - i.e. all chunks are byte aligned. All 
@@ -242,8 +242,8 @@ filled with the description read from the file header (for qoi_read and
 qoi_decode).
 
 The colorspace in this qoi_desc is an enum where 
-  0 = sRGB, i.e. gamma scaled RGB channels and a linear alpha channel
-  1 = all channels are linear
+	0 = sRGB, i.e. gamma scaled RGB channels and a linear alpha channel
+	1 = all channels are linear
 You may use the constants QOI_SRGB or QOI_LINEAR. The colorspace is purely 
 informative. It will be saved to the file header, but does not affect
 en-/decoding in any way. */
@@ -325,7 +325,7 @@ Implementation */
 	#define QOI_FREE(p)    free(p)
 #endif
 #ifndef QOI_ZEROARR
-	#define QOI_ZEROARR(_arr) memset((_arr),0,sizeof(_arr))
+	#define QOI_ZEROARR(a) memset((a),0,sizeof(a))
 #endif
 
 #define QOI_OP_INDEX  0x00 /* 00xxxxxx */
@@ -361,7 +361,7 @@ unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
 	unsigned int b = bytes[(*p)++];
 	unsigned int c = bytes[(*p)++];
 	unsigned int d = bytes[(*p)++];
-	return (a << 24) | (b << 16) | (c << 8) | d;
+	return a << 24 | b << 16 | c << 8 | d;
 }
 
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
@@ -430,7 +430,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 				run = 0;
 			}
 		}
-		else  {
+		else {
 			int index_pos;
 
 			if (run > 0) {
