@@ -131,7 +131,7 @@ void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t leng
 	write_data->size += length;
 }
 
-void *libpng_encode(void *pixels, int w, int h, int *out_len) {
+void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) {
 		ERROR("png_create_write_struct");
@@ -152,7 +152,7 @@ void *libpng_encode(void *pixels, int w, int h, int *out_len) {
 		info,
 		w, h,
 		8,
-		PNG_COLOR_TYPE_RGBA,
+		(channels==3)?PNG_COLOR_TYPE_RGB:PNG_COLOR_TYPE_RGBA,
 		PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT,
 		PNG_FILTER_TYPE_DEFAULT
@@ -160,13 +160,13 @@ void *libpng_encode(void *pixels, int w, int h, int *out_len) {
 
 	png_bytep row_pointers[h];
 	for(int y = 0; y < h; y++){
-		row_pointers[y] = ((unsigned char *)pixels + y * w * 4);
+		row_pointers[y] = ((unsigned char *)pixels + y * w * channels);
 	}
 
 	libpng_write_t write_data = {
 		.size = 0,
-		.capacity = w * h * 4,
-		.data = malloc(w * h * 4)
+		.capacity = w * h * channels,
+		.data = malloc(w * h * channels)
 	};
 
 	png_set_rows(png, info, row_pointers);
@@ -410,15 +410,21 @@ benchmark_result_t benchmark_image(const char *path) {
 	int encoded_qoi_size;
 	int w;
 	int h;
+	int channels;
 
 	// Load the encoded PNG, encoded QOI and raw pixels into memory
+	if(!stbi_info(path, &w, &h, &channels)) {
+		ERROR("Error decoding header %s", path);
+	}
 
-	void *pixels = (void *)stbi_load(path, &w, &h, NULL, 4);
+	channels = (channels == 3) ? 3 : 4;
+
+	void *pixels = (void *)stbi_load(path, &w, &h, NULL, channels);
 	void *encoded_png = fload(path, &encoded_png_size);
 	void *encoded_qoi = qoi_encode(pixels, &(qoi_desc){
 			.width = w,
 			.height = h, 
-			.channels = 4,
+			.channels = channels,
 			.colorspace = QOI_SRGB
 		}, &encoded_qoi_size);
 
@@ -430,8 +436,8 @@ benchmark_result_t benchmark_image(const char *path) {
 
 	if (!opt_noverify) {
 		qoi_desc dc;
-		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, 4);
-		if (memcmp(pixels, pixels_qoi, w * h * 4) != 0) {
+		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, channels);
+		if (memcmp(pixels, pixels_qoi, w * h * channels) != 0) {
 			ERROR("QOI roundtrip pixel missmatch for %s", path);
 		}
 		free(pixels_qoi);
@@ -441,7 +447,7 @@ benchmark_result_t benchmark_image(const char *path) {
 
 	benchmark_result_t res = {0};
 	res.count = 1;
-	res.raw_size = w * h * 4;
+	res.raw_size = w * h * channels;
 	res.px = w * h;
 	res.w = w;
 	res.h = h;
@@ -473,19 +479,18 @@ benchmark_result_t benchmark_image(const char *path) {
 
 
 	// Encoding
-
 	if (!opt_noencode) {
 		if (!opt_nopng) {
 			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libpng.encode_time, {
 				int enc_size;
-				void *enc_p = libpng_encode(pixels, w, h, &enc_size);
+				void *enc_p = libpng_encode(pixels, w, h, channels, &enc_size);
 				res.libpng.size = enc_size;
 				free(enc_p);
 			});
 
 			BENCHMARK_FN(opt_nowarmup, opt_runs, res.stbi.encode_time, {
 				int enc_size = 0;
-				stbi_write_png_to_func(stbi_write_callback, &enc_size, w, h, 4, pixels, 0);
+				stbi_write_png_to_func(stbi_write_callback, &enc_size, w, h, channels, pixels, 0);
 				res.stbi.size = enc_size;
 			});
 		}
@@ -495,7 +500,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			void *enc_p = qoi_encode(pixels, &(qoi_desc){
 				.width = w,
 				.height = h, 
-				.channels = 4,
+				.channels = channels,
 				.colorspace = QOI_SRGB
 			}, &enc_size);
 			res.qoi.size = enc_size;
