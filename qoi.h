@@ -102,7 +102,7 @@ pixel value. Pixels are either encoded as
  - full r,g,b or r,g,b,a values
 
 The color channels are assumed to not be premultiplied with the alpha channel 
-(“un-premultiplied alpha”).
+("un-premultiplied alpha").
 
 A running array[64] (zero-initialized) of previously seen pixel values is 
 maintained by the encoder and decoder. Each pixel that is seen by the encoder
