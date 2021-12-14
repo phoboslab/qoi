@@ -58,7 +58,17 @@ int main(int argc, char **argv) {
 	void *pixels = NULL;
 	int w, h, channels;
 	if (STR_ENDS_WITH(argv[1], ".png")) {
-		pixels = (void *)stbi_load(argv[1], &w, &h, &channels, 0);
+		if(!stbi_info(argv[1], &w, &h, &channels)) {
+			printf("Couldn't read header %s\n", argv[1]);
+			exit(1);
+		}
+		if(channels < 3) {// Force all odd encodings to be RGBA
+			channels = 4;
+			pixels = (void *)stbi_load(argv[1], &w, &h, NULL, 4);
+		}
+		else {
+			pixels = (void *)stbi_load(argv[1], &w, &h, &channels, 0);
+		}
 	}
 	else if (STR_ENDS_WITH(argv[1], ".qoi")) {
 		qoi_desc desc;
