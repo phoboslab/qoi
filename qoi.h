@@ -168,8 +168,8 @@ Values are stored as unsigned integers with a bias of 2. E.g. -2 is stored as
 The green channel is used to indicate the general direction of change and is 
 encoded in 6 bits. The red and green channels (dr and db) base their diffs off
 of the green channel difference and are encoded in 4 bits. I.e.:
-  dr_dg = (last_px.r - cur_px.r) - (last_px.g - cur_px.g)
-  db_dg = (last_px.b - cur_px.b) - (last_px.g - cur_px.g)
+	dr_dg = (last_px.r - cur_px.r) - (last_px.g - cur_px.g)
+	db_dg = (last_px.b - cur_px.b) - (last_px.g - cur_px.g)
 
 The difference to the current channel values are using a wraparound operation, 
 so "10 - 13" will result in 253, while "250 + 7" will result in 1.
@@ -344,6 +344,12 @@ Implementation */
 #define QOI_HEADER_SIZE 14
 #define QOI_PADDING 8
 
+/* 2GB is the max file size that this implementation can safely handle. We guard
+against anything larger than that, assuming the worst case with 5 bytes per 
+pixel, rounded down to a nice clean value. 400 million pixels ought to be 
+enough for anybody. */
+#define QOI_PIXELS_MAX ((unsigned int)400000000)
+
 typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
@@ -376,7 +382,8 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		data == NULL || out_len == NULL || desc == NULL ||
 		desc->width == 0 || desc->height == 0 ||
 		desc->channels < 3 || desc->channels > 4 ||
-		desc->colorspace > 2
+		desc->colorspace > 2 ||
+		desc->height >= QOI_PIXELS_MAX / desc->width
 	) {
 		return NULL;
 	}
@@ -502,7 +509,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	unsigned char *pixels;
 	qoi_rgba_t index[64];
 	qoi_rgba_t px;
-	int px_len,  chunks_len, px_pos;
+	int px_len, chunks_len, px_pos;
 	int p = 0, run = 0;
 
 	if (
@@ -525,7 +532,8 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		desc->width == 0 || desc->height == 0 || 
 		desc->channels < 3 || desc->channels > 4 ||
 		desc->colorspace > 2 ||
-		header_magic != QOI_MAGIC
+		header_magic != QOI_MAGIC ||
+		desc->height >= QOI_PIXELS_MAX / desc->width
 	) {
 		return NULL;
 	}
@@ -636,6 +644,10 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 
 	fseek(f, 0, SEEK_END);
 	size = ftell(f);
+	if (size <= 0) {
+		fclose(f);
+		return NULL;
+	}
 	fseek(f, 0, SEEK_SET);
 
 	data = QOI_MALLOC(size);

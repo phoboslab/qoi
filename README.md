@@ -7,8 +7,6 @@ the documentation.
 
 More info at https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compression
 
-⚠️ Please note that this library is not yet ready to deal with untrusted input.
-
 ⚠️ 2021.11.30 – the file format is not yet finalized. We're still working to fix
 some smaller issues. The final specification will be announced on 2021.12.20.
 Thanks for your patience! The WIP file format specification can be found in
@@ -28,6 +26,22 @@ fits in about 300 lines of C.
 converts between png <> qoi
  - [qoibench.c](https://github.com/phoboslab/qoi/blob/master/qoibench.c)
 a simple wrapper to benchmark stbi, libpng and qoi
+
+
+## Limitations
+
+The QOI file format allows for huge images with up to 18 exa-pixels. A streaming 
+en-/decoder can handle these with minimal RAM requirements, assuming there is 
+enough storage space.
+
+This particular implementation of QOI however is limited to images with a 
+maximum size of 400 million pixels. It will safely refuse to en-/decode anything
+larger than that. This is not a streaming en-/decoder. It loads the whole image
+file into RAM before doing any work and is not extensively optimized for 
+performance (but it's still very fast).
+
+If this is a limitation for your use case, please look into any of the other 
+implementations listed below.
 
 
 ## Tools
