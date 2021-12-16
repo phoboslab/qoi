@@ -83,8 +83,8 @@ implementation you can define QOI_ZEROARR before including this library.
 
 -- Data Format
 
-A QOI file has a 14 byte header, followed by any number of data "chunks" and 8
-zero-bytes to mark the end of the data stream.
+A QOI file has a 14 byte header, followed by any number of data "chunks" and an
+8-byte end marker.
 
 struct qoi_header_t {
 	char     magic[4];   // magic bytes "qoif"
@@ -120,7 +120,7 @@ values encoded in these data bits have the most significant bit on the left.
 The 8-bit tags have precedence over the 2-bit tags. A decoder must check for the
 presence of an 8-bit tag first.
 
-The byte stream is padded with 8 zero-bytes at the end.
+The byte stream's end is marked with 7 0x00 bytes followed a single 0x01 byte.
 
 
 The possible chunks are:
@@ -134,6 +134,9 @@ The possible chunks are:
 `-------------------------`
 2-bit tag b00
 6-bit index into the color index array: 0..63
+
+A valid encoder must not issue 7 or more consecutive QOI_OP_INDEX chunks to the
+index 0, to avoid confusion with the 8 byte end marker. 
 
 
 .- QOI_OP_DIFF -----------. 
@@ -342,7 +345,6 @@ Implementation */
 	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
 #define QOI_HEADER_SIZE 14
-#define QOI_PADDING 8
 
 /* 2GB is the max file size that this implementation can safely handle. We guard
 against anything larger than that, assuming the worst case with 5 bytes per 
@@ -354,6 +356,8 @@ typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
 } qoi_rgba_t;
+
+static const unsigned char qoi_padding[8] = {0,0,0,0,0,0,0,1};
 
 void qoi_write_32(unsigned char *bytes, int *p, unsigned int v) {
 	bytes[(*p)++] = (0xff000000 & v) >> 24;
@@ -390,7 +394,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 
 	max_size = 
 		desc->width * desc->height * (desc->channels + 1) + 
-		QOI_HEADER_SIZE + QOI_PADDING;
+		QOI_HEADER_SIZE + sizeof(qoi_padding);
 
 	p = 0;
 	bytes = (unsigned char *) QOI_MALLOC(max_size);
@@ -495,8 +499,8 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		px_prev = px;
 	}
 
-	for (i = 0; i < QOI_PADDING; i++) {
-		bytes[p++] = 0;
+	for (i = 0; i < sizeof(qoi_padding); i++) {
+		bytes[p++] = qoi_padding[i];
 	}
 
 	*out_len = p;
@@ -515,7 +519,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	if (
 		data == NULL || desc == NULL ||
 		(channels != 0 && channels != 3 && channels != 4) ||
-		size < QOI_HEADER_SIZE + QOI_PADDING
+		size < QOI_HEADER_SIZE + sizeof(qoi_padding)
 	) {
 		return NULL;
 	}
@@ -554,7 +558,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	px.rgba.b = 0;
 	px.rgba.a = 255;
 
-	chunks_len = size - QOI_PADDING;
+	chunks_len = size - sizeof(qoi_padding);
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
 			run--;
