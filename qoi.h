@@ -499,7 +499,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		px_prev = px;
 	}
 
-	for (i = 0; i < sizeof(qoi_padding); i++) {
+	for (i = 0; i < (int)sizeof(qoi_padding); i++) {
 		bytes[p++] = qoi_padding[i];
 	}
 
@@ -519,7 +519,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	if (
 		data == NULL || desc == NULL ||
 		(channels != 0 && channels != 3 && channels != 4) ||
-		size < QOI_HEADER_SIZE + sizeof(qoi_padding)
+		size < QOI_HEADER_SIZE + (int)sizeof(qoi_padding)
 	) {
 		return NULL;
 	}
@@ -558,7 +558,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	px.rgba.b = 0;
 	px.rgba.a = 255;
 
-	chunks_len = size - sizeof(qoi_padding);
+	chunks_len = size - (int)sizeof(qoi_padding);
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
 		if (run > 0) {
 			run--;
