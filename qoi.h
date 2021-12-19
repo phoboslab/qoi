@@ -458,12 +458,13 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 				run = 0;
 			}
 
-			if (index[index_lookup[hash] % 64].v == px.v) {
-				bytes[p++] = QOI_OP_INDEX | (index_lookup[hash] % 64);
+			if (index[index_lookup[hash]].v == px.v) {
+				bytes[p++] = QOI_OP_INDEX | index_lookup[hash];
 			}
 			else {
 				index_lookup[hash] = index_pos;
-				index[index_pos++ % 64] = px;
+				index[index_pos] = px;
+				index_pos = (index_pos + 1) % 64;
 
 				if (px.rgba.a == px_prev.rgba.a) {
 					signed char vr = px.rgba.r - px_prev.rgba.r;
