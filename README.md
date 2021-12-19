@@ -64,6 +64,7 @@ implementations listed below.
 - https://github.com/rbino/qoix (Elixir)
 - https://github.com/elihwyma/Swift-QOI (Swift)
 - https://github.com/saharNooby/qoi-java (Java)
+- https://github.com/Cr4xy/lua-qoi (Lua)
 
 
 ## Packages
