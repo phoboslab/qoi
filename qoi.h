@@ -190,7 +190,7 @@ and a bias of 8 for the red and blue channel.
 2-bit tag b11
 6-bit run-length repeating the previous pixel: 1..62
 
-The run-length is stored with a bias of 1. Note that the run-lengths 63 and 64 
+The run-length is stored with a bias of -1. Note that the run-lengths 63 and 64 
 (b111110 and b111111) are illegal as they are occupied by the QOI_OP_RGB and 
 QOI_OP_RGBA tags.
 
