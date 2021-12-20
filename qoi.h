@@ -219,13 +219,6 @@ QOI_OP_RGBA tags.
 8-bit  blue channel value
 8-bit alpha channel value
 
-
-The byte stream is padded at the end with 8 zero bytes. Since the longest legal 
-chunk is 5 bytes (QOI_OP_RGBA), with this padding it is possible to check for an
-overrun only once per decode loop iteration. These 0x00 bytes also mark the end
-of the data stream, as an encoder should never produce 8 consecutive zero bytes
-within the stream.
-
 */
 
 
