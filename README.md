@@ -42,7 +42,8 @@ implementations listed below.
 ## Tools
 
 - https://github.com/floooh/qoiview - native QOI viewer
-- https://github.com/pfusik/qoi-ci/releases/tag/qoi-ci-1.0.0 - QOI Plugin installer for GIMP, Paint.NET and XnView MP 
+- https://github.com/pfusik/qoi-ci/releases/tag/qoi-ci-1.0.0 - QOI Plugin installer for GIMP, Paint.NET and XnView MP
+- https://github.com/iOrange/QoiFileTypeNet/releases/tag/v0.2 - QOI Plugin for Paint.NET
 
 
 ## Implementations of QOI
