@@ -91,8 +91,11 @@ struct qoi_header_t {
 	uint8_t  colorspace; // 0 = sRGB with linear alpha, 1 = all channels linear
 };
 
-The decoder and encoder start with {r: 0, g: 0, b: 0, a: 255} as the previous
-pixel value. Pixels are either encoded as
+Images are encoded from top to bottom, left to right. The decoder and encoder 
+start with {r: 0, g: 0, b: 0, a: 255} as the previous pixel value. An image is
+complete when all pixels specified by width * height have been covered.
+
+Pixels are encoded as
  - a run of the previous pixel
  - an index into an array of previously seen pixels
  - a difference to the previous pixel value in r,g,b
