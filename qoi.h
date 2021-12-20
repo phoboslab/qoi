@@ -28,12 +28,9 @@ SOFTWARE.
 
 -- About
 
-QOI encodes and decodes images in a lossless format. An encoded QOI image is
-usually around 10--30% larger than a decently optimized PNG image.
-
-QOI outperforms simpler PNG encoders in compression ratio and performance. QOI
-images are typically 20% smaller than PNGs written with stbi_image. Encoding is 
-25-50x faster and decoding is 3-4x faster than stbi_image or libpng.
+QOI encodes and decodes images in a lossless format. Compared to stb_image and 
+stb_image_write QOI offers 20x-50x faster encoding, 3x-4x faster decoding and 
+20% better compression.
 
 
 -- Synopsis
