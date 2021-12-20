@@ -53,7 +53,7 @@ implementations listed below.
 - https://github.com/xfmoulet/qoi (Go)
 - https://github.com/panzi/jsqoi (TypeScript)
 - https://github.com/0xd34df00d/hsqoi (Haskell)
-- https://github.com/pfusik/qoi-ci (Ć)
+- https://github.com/pfusik/qoi-ci (Ć, transpiled to C, C++, C#, Java, JavaScript, Python and Swift)
 - https://github.com/kodonnell/qoi (Python)
 - https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/rbino/qoix (Elixir)
