@@ -169,7 +169,7 @@ Values are stored as unsigned integers with a bias of 2. E.g. -2 is stored as
 4-bit  blue channel difference minus green channel difference -8..7
 
 The green channel is used to indicate the general direction of change and is 
-encoded in 6 bits. The red and green channels (dr and db) base their diffs off
+encoded in 6 bits. The red and blue channels (dr and db) base their diffs off
 of the green channel difference and are encoded in 4 bits. I.e.:
 	dr_dg = (last_px.r - cur_px.r) - (last_px.g - cur_px.g)
 	db_dg = (last_px.b - cur_px.b) - (last_px.g - cur_px.g)
