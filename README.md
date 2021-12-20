@@ -62,6 +62,7 @@ implementations listed below.
 - https://github.com/elihwyma/Swift-QOI (Swift)
 - https://github.com/saharNooby/qoi-java (Java)
 - https://github.com/Cr4xy/lua-qoi (Lua)
+- https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
 
 
 ## Packages
