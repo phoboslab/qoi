@@ -1,16 +1,11 @@
-# QOI - The “Quite OK Image” format for fast, lossless image compression
+# QOI - The “Quite OK Image Format” for fast, lossless image compression
 
 Single-file MIT licensed library for C/C++
 
 See [qoi.h](https://github.com/phoboslab/qoi/blob/master/qoi.h) for
-the documentation.
+the documentation and format specification.
 
-More info at https://phoboslab.org/log/2021/11/qoi-fast-lossless-image-compression
-
-⚠️ 2021.11.30 – the file format is not yet finalized. We're still working to fix
-some smaller issues. The final specification will be announced on 2021.12.20.
-Thanks for your patience! The WIP file format specification can be found in
-[qoi.h](https://github.com/phoboslab/qoi/blob/master/qoi.h)
+More info at https://qoiformat.org
 
 
 ## Why?
@@ -70,4 +65,3 @@ implementations listed below.
 ## Packages
 
 [AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
-
