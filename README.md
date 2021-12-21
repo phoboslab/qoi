@@ -46,7 +46,22 @@ implementations listed below.
 - https://github.com/iOrange/QoiFileTypeNet/releases/tag/v0.2 - QOI Plugin for Paint.NET
 
 
-## Implementations of QOI
+## Implementations & Bindings of QOI
+
+- https://github.com/pfusik/qoi-ci (Ć, transpiled to C, C++, C#, Java, JavaScript, Python and Swift)
+- https://github.com/kodonnell/qoi (Python)
+- https://github.com/Cr4xy/lua-qoi (Lua)
+- https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
+
+
+## Packages
+
+[AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
+
+
+## Implementations not yet conforming to the final specification
+
+These implementations are based on the pre-release version of QOI. Resulting files are not compatible with the current version.
 
 - https://github.com/MasterQ32/zig-qoi (Zig)
 - https://github.com/steven-joruk/qoi (Rust)
@@ -55,16 +70,8 @@ implementations listed below.
 - https://github.com/xfmoulet/qoi (Go)
 - https://github.com/panzi/jsqoi (TypeScript)
 - https://github.com/0xd34df00d/hsqoi (Haskell)
-- https://github.com/pfusik/qoi-ci (Ć, transpiled to C, C++, C#, Java, JavaScript, Python and Swift)
-- https://github.com/kodonnell/qoi (Python)
 - https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/rbino/qoix (Elixir)
 - https://github.com/elihwyma/Swift-QOI (Swift)
 - https://github.com/saharNooby/qoi-java (Java)
-- https://github.com/Cr4xy/lua-qoi (Lua)
-- https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
 
-
-## Packages
-
-[AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
