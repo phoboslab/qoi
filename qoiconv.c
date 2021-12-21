@@ -48,10 +48,10 @@ SOFTWARE.
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
-		printf("Usage: qoiconv <infile> <outfile>\n");
-		printf("Examples:\n");
-		printf("  qoiconv input.png output.qoi\n");
-		printf("  qoiconv input.qoi output.png\n");
+		puts("Usage: qoiconv <infile> <outfile>");
+		puts("Examples:");
+		puts("  qoiconv input.png output.qoi");
+		puts("  qoiconv input.qoi output.png");
 		exit(1);
 	}
 
