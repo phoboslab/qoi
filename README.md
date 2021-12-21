@@ -52,6 +52,7 @@ implementations listed below.
 - https://github.com/kodonnell/qoi (Python)
 - https://github.com/Cr4xy/lua-qoi (Lua)
 - https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
+- https://github.com/saharNooby/qoi-java (Java)
 
 
 ## Packages
@@ -73,5 +74,4 @@ These implementations are based on the pre-release version of QOI. Resulting fil
 - https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/rbino/qoix (Elixir)
 - https://github.com/elihwyma/Swift-QOI (Swift)
-- https://github.com/saharNooby/qoi-java (Java)
 
