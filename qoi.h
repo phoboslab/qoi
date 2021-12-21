@@ -412,7 +412,8 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	px_prev.rgba.b = 0;
 	px_prev.rgba.a = 255;
 	px = px_prev;
-	
+	index[QOI_COLOR_HASH(px) % 64] = px;
+
 	px_len = desc->width * desc->height * desc->channels;
 	px_end = px_len - desc->channels;
 	channels = desc->channels;
@@ -550,6 +551,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	px.rgba.g = 0;
 	px.rgba.b = 0;
 	px.rgba.a = 255;
+	index[QOI_COLOR_HASH(px) % 64] = px;
 
 	chunks_len = size - (int)sizeof(qoi_padding);
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
