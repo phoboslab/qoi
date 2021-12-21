@@ -63,6 +63,7 @@ implementations listed below.
 - https://github.com/saharNooby/qoi-java (Java)
 - https://github.com/Cr4xy/lua-qoi (Lua)
 - https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
+- https://github.com/SerenityOS/serenity (in system-wide [LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/QOILoader.h))
 
 
 ## Packages
