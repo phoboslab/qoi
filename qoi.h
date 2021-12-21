@@ -156,6 +156,8 @@ so "1 - 2" will result in 255, while "255 + 1" will result in 0.
 Values are stored as unsigned integers with a bias of 2. E.g. -2 is stored as 
 0 (b00). 1 is stored as 3 (b11).
 
+The alpha value remains unchanged from the previous pixel.
+
 
 .- QOI_OP_LUMA -------------------------------------. 
 |         Byte[0]         |         Byte[1]         |
@@ -179,6 +181,8 @@ so "10 - 13" will result in 253, while "250 + 7" will result in 1.
 
 Values are stored as unsigned integers with a bias of 32 for the green channel 
 and a bias of 8 for the red and blue channel.
+
+The alpha value remains unchanged from the previous pixel.
 
 
 .- QOI_OP_RUN ------------.
@@ -205,6 +209,8 @@ QOI_OP_RGBA tags.
 8-bit   red channel value
 8-bit green channel value
 8-bit  blue channel value
+
+The alpha value remains unchanged from the previous pixel.
 
 
 .- QOI_OP_RGBA ---------------------------------------------------.
