@@ -55,6 +55,11 @@ implementations listed below.
 - https://github.com/saharNooby/qoi-java (Java)
 
 
+## QOI Support in Other Software
+
+- [SerenityOS](https://github.com/SerenityOS/serenity) supports decoding QOI system wide through a custom [cpp implementation in LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/QOILoader.h)
+
+
 ## Packages
 
 [AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
