@@ -54,7 +54,7 @@ SOFTWARE.
 // From https://gist.github.com/ForeverZer0/0a4f80fc02b96e19380ebb7a3debbee5
 
 #include <stdint.h>
-#if defined(__linux)
+#if defined(__linux) || defined(__openbsd__)
 	#define HAVE_POSIX_TIMER
 	#include <time.h>
 	#ifdef CLOCK_MONOTONIC
@@ -72,7 +72,7 @@ SOFTWARE.
 
 static uint64_t ns() {
 	static uint64_t is_init = 0;
-#if defined(__APPLE__)
+#if defined(HAVE_MACH_TIMER)
 		static mach_timebase_info_data_t info;
 		if (0 == is_init) {
 			mach_timebase_info(&info);
@@ -83,10 +83,10 @@ static uint64_t ns() {
 		now *= info.numer;
 		now /= info.denom;
 		return now;
-#elif defined(__linux)
-		static struct timespec linux_rate;
+#elif defined(HAVE_POSIX_TIMER)
+		static struct timespec posix_rate;
 		if (0 == is_init) {
-			clock_getres(CLOCKID, &linux_rate);
+			clock_getres(CLOCKID, &posix_rate);
 			is_init = 1;
 		}
 		uint64_t now;
@@ -94,7 +94,7 @@ static uint64_t ns() {
 		clock_gettime(CLOCKID, &spec);
 		now = spec.tv_sec * 1.0e9 + spec.tv_nsec;
 		return now;
-#elif defined(_WIN32)
+#elif defined(WIN32_LEAN_AND_MEAN)
 		static LARGE_INTEGER win_frequency;
 		if (0 == is_init) {
 			QueryPerformanceFrequency(&win_frequency);
