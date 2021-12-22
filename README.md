@@ -55,6 +55,7 @@ implementations listed below.
 - https://github.com/Cr4xy/lua-qoi (Lua)
 - https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
 - https://github.com/saharNooby/qoi-java (Java)
+- https://github.com/MasterQ32/zig-qoi (Zig)
 
 
 ## QOI Support in Other Software
@@ -72,7 +73,6 @@ implementations listed below.
 
 These implementations are based on the pre-release version of QOI. Resulting files are not compatible with the current version.
 
-- https://github.com/MasterQ32/zig-qoi (Zig)
 - https://github.com/steven-joruk/qoi (Rust)
 - https://github.com/ChevyRay/qoi_rs (Rust)
 - https://github.com/zakarumych/rapid-qoi (Rust)
