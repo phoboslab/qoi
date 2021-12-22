@@ -24,6 +24,24 @@ converts between png <> qoi
  - [qoibench.c](https://github.com/phoboslab/qoi/blob/master/qoibench.c)
 a simple wrapper to benchmark stbi, libpng and qoi
 
+## Compile & Install
+
+`make tools`
+`sudo make prefix=/usr install`
+
+This will compile `qoibench` and `qoiconv` and install them under `/usr/bin`. `qoi.h` will be installed to `/usr/include/qoi.h`.
+
+The Makefile assumes you have `libpng` installed on your system, and
+that `pkg-config` is able to provide the appropriate compiler and
+linker flags to enable its use.
+
+Adjust `prefix=/usr` to suit your preferences/system.
+
+To remove:
+
+`sudo make prefix=/usr uninstall`.
+
+This will remove everything. Note you need to use the same `prefix` setting as you installed with.
 
 ## Limitations
 
