@@ -62,6 +62,7 @@ implementations listed below.
 - https://github.com/zakarumych/rapid-qoi (Rust)
 - https://github.com/takeyourhatoff/qoi (Go)
 - https://github.com/DosWorld/pasqoi (Pascal)
+- https://github.com/elihwyma/Swift-QOI (Swift)
 
 
 ## QOI Support in Other Software
@@ -85,5 +86,4 @@ These implementations are based on the pre-release version of QOI. Resulting fil
 - https://github.com/xfmoulet/qoi (Go)
 - https://github.com/panzi/jsqoi (TypeScript)
 - https://github.com/0xd34df00d/hsqoi (Haskell)
-- https://github.com/elihwyma/Swift-QOI (Swift)
 
