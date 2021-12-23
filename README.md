@@ -61,6 +61,7 @@ implementations listed below.
 - https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/zakarumych/rapid-qoi (Rust)
 - https://github.com/takeyourhatoff/qoi (Go)
+- https://github.com/DosWorld/pasqoi (Pascal)
 
 
 ## QOI Support in Other Software
