@@ -60,6 +60,7 @@ implementations listed below.
 - https://github.com/rbino/qoix (Elixir)
 - https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/zakarumych/rapid-qoi (Rust)
+- https://github.com/takeyourhatoff/qoi (Go)
 
 
 ## QOI Support in Other Software
