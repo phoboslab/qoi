@@ -56,12 +56,15 @@ implementations listed below.
 - https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
 - https://github.com/saharNooby/qoi-java (Java)
 - https://github.com/rbino/qoix (Elixir)
+- https://github.com/NUlliiON/QoiSharp (C#)
+- https://github.com/zakarumych/rapid-qoi (Rust)
 
 
 ## QOI Support in Other Software
 
 - [SerenityOS](https://github.com/SerenityOS/serenity) supports decoding QOI system wide through a custom [cpp implementation in LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/QOILoader.h)
 - [Raylib](https://github.com/raysan5/raylib) supports decoding and encoding QOI textures through its [rtextures module](https://github.com/raysan5/raylib/blob/master/src/rtextures.c)
+- [Rebol3](https://github.com/Oldes/Rebol3/issues/39) supports decoding and encoding QOI using a native codec
 
 
 ## Packages
@@ -76,10 +79,8 @@ These implementations are based on the pre-release version of QOI. Resulting fil
 - https://github.com/MasterQ32/zig-qoi (Zig)
 - https://github.com/steven-joruk/qoi (Rust)
 - https://github.com/ChevyRay/qoi_rs (Rust)
-- https://github.com/zakarumych/rapid-qoi (Rust)
 - https://github.com/xfmoulet/qoi (Go)
 - https://github.com/panzi/jsqoi (TypeScript)
 - https://github.com/0xd34df00d/hsqoi (Haskell)
-- https://github.com/NUlliiON/QoiSharp (C#)
 - https://github.com/elihwyma/Swift-QOI (Swift)
 
