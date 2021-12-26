@@ -196,7 +196,7 @@ void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 }
 
 void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
-	// Ingore warnings about sRGB profiles and such.
+	// Ignore warnings about sRGB profiles and such.
 }
 
 void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
@@ -388,7 +388,7 @@ void benchmark_print_result(benchmark_result_t res) {
 	printf("\n");
 }
 
-// Run __VA_ARGS__ a number of times and meassure the time taken. The first
+// Run __VA_ARGS__ a number of times and measure the time taken. The first
 // run is ignored.
 #define BENCHMARK_FN(NOWARMUP, RUNS, AVG_TIME, ...) \
 	do { \
@@ -440,7 +440,7 @@ benchmark_result_t benchmark_image(const char *path) {
 		qoi_desc dc;
 		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, channels);
 		if (memcmp(pixels, pixels_qoi, w * h * channels) != 0) {
-			ERROR("QOI roundtrip pixel missmatch for %s", path);
+			ERROR("QOI roundtrip pixel mismatch for %s", path);
 		}
 		free(pixels_qoi);
 	}
@@ -545,14 +545,14 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 
 	benchmark_result_t dir_total = {0};
 	
-	int has_shown_heaad = 0;
+	int has_shown_head = 0;
 	for (int i = 0; (file = readdir(dir)) != NULL; i++) {
 		if (strcmp(file->d_name + strlen(file->d_name) - 4, ".png") != 0) {
 			continue;
 		}
 
-		if (!has_shown_heaad) {
-			has_shown_heaad = 1;
+		if (!has_shown_head) {
+			has_shown_head = 1;
 			printf("## Benchmarking %s/*.png -- %d runs\n\n", path, opt_runs);
 		}
 
