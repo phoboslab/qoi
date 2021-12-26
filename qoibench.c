@@ -545,14 +545,14 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 
 	benchmark_result_t dir_total = {0};
 	
-	int has_shown_heaad = 0;
+	int has_shown_head = 0;
 	for (int i = 0; (file = readdir(dir)) != NULL; i++) {
 		if (strcmp(file->d_name + strlen(file->d_name) - 4, ".png") != 0) {
 			continue;
 		}
 
-		if (!has_shown_heaad) {
-			has_shown_heaad = 1;
+		if (!has_shown_head) {
+			has_shown_head = 1;
 			printf("## Benchmarking %s/*.png -- %d runs\n\n", path, opt_runs);
 		}
 
