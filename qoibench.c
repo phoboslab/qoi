@@ -388,7 +388,7 @@ void benchmark_print_result(benchmark_result_t res) {
 	printf("\n");
 }
 
-// Run __VA_ARGS__ a number of times and meassure the time taken. The first
+// Run __VA_ARGS__ a number of times and measure the time taken. The first
 // run is ignored.
 #define BENCHMARK_FN(NOWARMUP, RUNS, AVG_TIME, ...) \
 	do { \
