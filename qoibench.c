@@ -440,7 +440,7 @@ benchmark_result_t benchmark_image(const char *path) {
 		qoi_desc dc;
 		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, channels);
 		if (memcmp(pixels, pixels_qoi, w * h * channels) != 0) {
-			ERROR("QOI roundtrip pixel missmatch for %s", path);
+			ERROR("QOI roundtrip pixel mismatch for %s", path);
 		}
 		free(pixels_qoi);
 	}
