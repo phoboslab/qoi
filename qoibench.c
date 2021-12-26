@@ -196,7 +196,7 @@ void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 }
 
 void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
-	// Ingore warnings about sRGB profiles and such.
+	// Ignore warnings about sRGB profiles and such.
 }
 
 void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
