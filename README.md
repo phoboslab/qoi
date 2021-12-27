@@ -66,6 +66,7 @@ implementations listed below.
 - https://github.com/elihwyma/Swift-QOI (Swift)
 - https://github.com/xfmoulet/qoi (Go)
 - https://erratique.ch/software/qoic (OCaml)
+- https://github.com/kchapelier/qoijs (JavaScript)
 
 
 ## QOI Support in Other Software
