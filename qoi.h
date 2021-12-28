@@ -373,13 +373,54 @@ static unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
 	return a << 24 | b << 16 | c << 8 | d;
 }
 
+typedef struct {
+	int p;
+	int run;
+	int px_len;
+	int px_end;
+	int px_pos;
+	qoi_rgba_t index[64];
+	qoi_rgba_t px_prev;
+} qoi_encoder_t;
+
+#define QOI_IS_OP_DIFF(vr, vg, vb) (vr > -3 && vr < 2 && vg > -3 && vg < 2 && vb > -3 && vb < 2)
+#define QOI_IS_OP_LUMA(vg, vg_r, vg_b) (vg_r >  -9 && vg_r <  8 && vg   > -33 && vg   < 32 &&  vg_b >  -9 && vg_b <  8)
+
+#define QOI_WRITE_OP_DIFF(bytes, encoder, vr, vg, vb) \
+	bytes[encoder.p++] = QOI_OP_DIFF | (vr + 2) << 4 | (vg + 2) << 2 | (vb + 2);
+
+#define QOI_WRITE_OP_LUMA(bytes, encoder, vg, vg_r, vg_b)	\
+	bytes[encoder.p++] = QOI_OP_LUMA     | (vg   + 32);		\
+	bytes[encoder.p++] = (vg_r + 8) << 4 | (vg_b +  8);
+
+#define QOI_WRITE_OP_RGB(bytes, encoder, px)	\
+	bytes[encoder.p++] = QOI_OP_RGB;			\
+	bytes[encoder.p++] = px.rgba.r;				\
+	bytes[encoder.p++] = px.rgba.g;				\
+	bytes[encoder.p++] = px.rgba.b;
+
+#define QOI_WRITE_OP_RGBA(bytes, encoder, px)	\
+	bytes[encoder.p++] = QOI_OP_RGBA;			\
+	bytes[encoder.p++] = px.rgba.r;				\
+	bytes[encoder.p++] = px.rgba.g;				\
+	bytes[encoder.p++] = px.rgba.b;				\
+	bytes[encoder.p++] = px.rgba.a;
+
+#ifdef __AVX2__
+#include "qoi_encoder_rgba_avx2.h"
+#endif
+
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
-	int i, max_size, p, run;
-	int px_len, px_end, px_pos, channels;
+	qoi_encoder_t encoder = {
+		.p = 0,
+		.run = 0
+	};
+
+	int i, max_size;
+	int channels;
 	unsigned char *bytes;
 	const unsigned char *pixels;
-	qoi_rgba_t index[64];
-	qoi_rgba_t px, px_prev;
+	qoi_rgba_t px;
 
 	if (
 		data == NULL || out_len == NULL || desc == NULL ||
@@ -395,114 +436,105 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		desc->width * desc->height * (desc->channels + 1) +
 		QOI_HEADER_SIZE + sizeof(qoi_padding);
 
-	p = 0;
 	bytes = (unsigned char *) QOI_MALLOC(max_size);
 	if (!bytes) {
 		return NULL;
 	}
 
-	qoi_write_32(bytes, &p, QOI_MAGIC);
-	qoi_write_32(bytes, &p, desc->width);
-	qoi_write_32(bytes, &p, desc->height);
-	bytes[p++] = desc->channels;
-	bytes[p++] = desc->colorspace;
+	qoi_write_32(bytes, &encoder.p, QOI_MAGIC);
+	qoi_write_32(bytes, &encoder.p, desc->width);
+	qoi_write_32(bytes, &encoder.p, desc->height);
+	bytes[encoder.p++] = desc->channels;
+	bytes[encoder.p++] = desc->colorspace;
 
 
 	pixels = (const unsigned char *)data;
 
-	QOI_ZEROARR(index);
+	QOI_ZEROARR(encoder.index);
 
-	run = 0;
-	px_prev.rgba.r = 0;
-	px_prev.rgba.g = 0;
-	px_prev.rgba.b = 0;
-	px_prev.rgba.a = 255;
-	px = px_prev;
-
-	px_len = desc->width * desc->height * desc->channels;
-	px_end = px_len - desc->channels;
+	encoder.px_prev.rgba.r = 0;
+	encoder.px_prev.rgba.g = 0;
+	encoder.px_prev.rgba.b = 0;
+	encoder.px_prev.rgba.a = 255;
+	px = encoder.px_prev;
+	
+	encoder.px_len = desc->width * desc->height * desc->channels;
+	encoder.px_end = encoder.px_len - desc->channels;
 	channels = desc->channels;
 
-	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
+	encoder.px_pos = 0;
+
+#ifdef __AVX2__
+	if (channels == 4 && encoder.px_len > (36 + 16)) {
+		encoder = qoi_encode_rgba_avx2(pixels, bytes, encoder);
+	}
+#endif
+
+	while (encoder.px_pos < encoder.px_len) {
 		if (channels == 4) {
-			px = *(qoi_rgba_t *)(pixels + px_pos);
+			px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
 		}
 		else {
-			px.rgba.r = pixels[px_pos + 0];
-			px.rgba.g = pixels[px_pos + 1];
-			px.rgba.b = pixels[px_pos + 2];
+			px.rgba.r = pixels[encoder.px_pos + 0];
+			px.rgba.g = pixels[encoder.px_pos + 1];
+			px.rgba.b = pixels[encoder.px_pos + 2];
 		}
 
-		if (px.v == px_prev.v) {
-			run++;
-			if (run == 62 || px_pos == px_end) {
-				bytes[p++] = QOI_OP_RUN | (run - 1);
-				run = 0;
+		if (px.v == encoder.px_prev.v) {
+			encoder.run++;
+			if (encoder.run == 62 || encoder.px_pos == encoder.px_end) {
+				bytes[encoder.p++] = QOI_OP_RUN | (encoder.run - 1);
+				encoder.run = 0;
 			}
 		}
 		else {
 			int index_pos;
 
-			if (run > 0) {
-				bytes[p++] = QOI_OP_RUN | (run - 1);
-				run = 0;
+			if (encoder.run > 0) {
+				bytes[encoder.p++] = QOI_OP_RUN | (encoder.run - 1);
+				encoder.run = 0;
 			}
 
 			index_pos = QOI_COLOR_HASH(px) % 64;
 
-			if (index[index_pos].v == px.v) {
-				bytes[p++] = QOI_OP_INDEX | index_pos;
+			if (encoder.index[index_pos].v == px.v) {
+				bytes[encoder.p++] = QOI_OP_INDEX | index_pos;
 			}
 			else {
-				index[index_pos] = px;
+				encoder.index[index_pos] = px;
 
-				if (px.rgba.a == px_prev.rgba.a) {
-					signed char vr = px.rgba.r - px_prev.rgba.r;
-					signed char vg = px.rgba.g - px_prev.rgba.g;
-					signed char vb = px.rgba.b - px_prev.rgba.b;
+				if (px.rgba.a == encoder.px_prev.rgba.a) {
+					signed char vr = px.rgba.r - encoder.px_prev.rgba.r;
+					signed char vg = px.rgba.g - encoder.px_prev.rgba.g;
+					signed char vb = px.rgba.b - encoder.px_prev.rgba.b;
 
 					signed char vg_r = vr - vg;
 					signed char vg_b = vb - vg;
 
-					if (
-						vr > -3 && vr < 2 &&
-						vg > -3 && vg < 2 &&
-						vb > -3 && vb < 2
-					) {
-						bytes[p++] = QOI_OP_DIFF | (vr + 2) << 4 | (vg + 2) << 2 | (vb + 2);
-					}
-					else if (
-						vg_r >  -9 && vg_r <  8 &&
-						vg   > -33 && vg   < 32 &&
-						vg_b >  -9 && vg_b <  8
-					) {
-						bytes[p++] = QOI_OP_LUMA     | (vg   + 32);
-						bytes[p++] = (vg_r + 8) << 4 | (vg_b +  8);
+					if (QOI_IS_OP_DIFF(vr, vg, vb)) {
+							QOI_WRITE_OP_DIFF(bytes, encoder, vr, vg, vb);
+						}
+					else if (QOI_IS_OP_LUMA(vg, vg_r, vg_b)) {
+						QOI_WRITE_OP_LUMA(bytes, encoder, vg, vg_r, vg_b);
 					}
 					else {
-						bytes[p++] = QOI_OP_RGB;
-						bytes[p++] = px.rgba.r;
-						bytes[p++] = px.rgba.g;
-						bytes[p++] = px.rgba.b;
+						QOI_WRITE_OP_RGB(bytes, encoder, px);
 					}
 				}
 				else {
-					bytes[p++] = QOI_OP_RGBA;
-					bytes[p++] = px.rgba.r;
-					bytes[p++] = px.rgba.g;
-					bytes[p++] = px.rgba.b;
-					bytes[p++] = px.rgba.a;
+					QOI_WRITE_OP_RGBA(bytes, encoder, px);
 				}
 			}
 		}
-		px_prev = px;
+		encoder.px_prev = px;
+		encoder.px_pos += channels;
 	}
 
 	for (i = 0; i < (int)sizeof(qoi_padding); i++) {
-		bytes[p++] = qoi_padding[i];
+		bytes[encoder.p++] = qoi_padding[i];
 	}
 
-	*out_len = p;
+	*out_len = encoder.p;
 	return bytes;
 }
 
