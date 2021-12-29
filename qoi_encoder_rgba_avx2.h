@@ -374,10 +374,7 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
                 bytes[encoder.p] = QOI_OP_RGBA;
                 encoder.p += block_lengths[block_offset] == 5;
 
-                bytes[encoder.p + 0] = block_values[block_offset + 0];
-                bytes[encoder.p + 1] = block_values[block_offset + 1];
-                bytes[encoder.p + 2] = block_values[block_offset + 2];
-                bytes[encoder.p + 3] = block_values[block_offset + 3];
+                *((unsigned int *) &bytes[encoder.p]) = *((unsigned int *) &block_values[block_offset]);
 
                 encoder.p += block_lengths[block_offset] * (encoder.index[index_pos].v != px.v);
                 encoder.p -= block_lengths[block_offset] == 5;
