@@ -288,7 +288,7 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
 #endif
 
 static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned char *bytes, qoi_encoder_t encoder) {
-    {
+    if (encoder.px_pos == 0) {
         qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
 
         if (px.v == encoder.px_prev.v) {
