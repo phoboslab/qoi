@@ -323,7 +323,7 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
         encoder.px_pos += 4;
     }
 
-    // When block_lengths[block_offfset] == 1 or when block_lengths[block_offfset] == 2 
+    // When block_lengths[block_offfset] == 1 or when block_lengths[block_offfset] == 2
     // we are actually writing too many bytes
     //
     // This explain the need for a little padding at the beginning of the loop
@@ -349,10 +349,9 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
                 encoder.run -= 62;
             }
             else if (block_runs[i] == 0) {
-                if (encoder.run > 0) {
-                    bytes[encoder.p++] = QOI_OP_RUN | (encoder.run - 1);
-                    encoder.run = 0;
-                }
+                bytes[encoder.p] = QOI_OP_RUN | (encoder.run - 1);
+                encoder.p += encoder.run > 0;
+                encoder.run = 0;
 
                 int index_pos = indexes_pos[i];
 
