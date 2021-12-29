@@ -281,6 +281,12 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
     _mm256_storeu_si256((__m256i *) block_values,  vec_value);
 }
 
+#ifdef likely
+#define QOI_LIKELY(x) likely(x)
+#else
+#define QOI_LIKELY(x) x
+#endif
+
 static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned char *bytes, qoi_encoder_t encoder) {
     {
         qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
@@ -353,11 +359,7 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
 
             encoder.run += block_runs[i];
 
-            if (encoder.run == 62) {
-                bytes[encoder.p++] = QOI_OP_RUN | 61;
-                encoder.run = 0;
-            }
-            else if (block_runs[i] == 0) {
+            if (QOI_LIKELY(block_runs[i] == 0)) {
                 int block_offset = i * 4;
 
                 bytes[encoder.p] = QOI_OP_RUN | (encoder.run - 1);
@@ -383,6 +385,10 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
                 encoder.p -= block_lengths[block_offset] == 5;
 
                 encoder.index[index_pos] = px;
+            }
+            else if (encoder.run == 62) {
+                bytes[encoder.p++] = QOI_OP_RUN | 61;
+                encoder.run = 0;
             }
 
             i++;
