@@ -1,4 +1,3 @@
-#include <assert.h>
 #include <immintrin.h>
 
 static void qoi_encode_block_rgba_runs(const unsigned char *pixels, unsigned int *output) {
