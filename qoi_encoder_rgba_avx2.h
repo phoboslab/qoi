@@ -281,8 +281,8 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
     _mm256_storeu_si256((__m256i *) block_values,  vec_value);
 }
 
-#ifdef likely
-#define QOI_LIKELY(x) likely(x)
+#ifdef __GNUC__
+#define QOI_LIKELY(x) __builtin_expect(!!(x), 1)
 #else
 #define QOI_LIKELY(x) x
 #endif
