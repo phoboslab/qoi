@@ -1,10 +1,13 @@
+#include <assert.h>
 #include <immintrin.h>
 
-static int qoi_encode_block_rgba_run_mask(const unsigned char *pixels) {
+static void qoi_encode_block_rgba_runs(const unsigned char *pixels, unsigned int *output) {
     __m256i vec_prev = _mm256_loadu_si256((__m256i *) (pixels - 4));
     __m256i vec_curr = _mm256_loadu_si256((__m256i *) pixels);
     __m256i same = _mm256_cmpeq_epi32(vec_prev, vec_curr);
-    return _mm256_movemask_epi8(same);
+    __m256i runs = _mm256_and_si256(same, _mm256_set1_epi32(0x00000001));
+
+    _mm256_storeu_si256((__m256i *) output, runs);
 }
 
 static void qoi_encode_block_rgba_indexes(const unsigned char *pixels, int *output) {
@@ -276,8 +279,6 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
     _mm256_storeu_si256((__m256i *) block_values,  vec_value);
 }
 
-#define QOI_ENCODER_RGBA_AVX2_BRANCHLESS 1
-
 static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned char *bytes, qoi_encoder_t encoder) {
     {
         qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
@@ -330,31 +331,28 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
 
     while (encoder.px_pos + 32 + padding < encoder.px_end) {
         int indexes_pos[8];
+        unsigned int block_runs[8];
         unsigned char block_lengths[32];
         unsigned char block_values[32];
 
+        qoi_encode_block_rgba_runs(pixels + encoder.px_pos, block_runs);
         qoi_encode_block_rgba_indexes(pixels + encoder.px_pos, indexes_pos);
         qoi_encode_block_rgba_values(pixels + encoder.px_pos, block_lengths, block_values);
 
-        int run_mask = qoi_encode_block_rgba_run_mask(pixels + encoder.px_pos);
+        for (int i = 0; i < 8; i++) {
+            qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
 
-        int same_value_count = _lzcnt_u32(~run_mask);
-        int runs = 0;
+            encoder.run += block_runs[i];
 
-        if (run_mask == 0) {
-            #if QOI_ENCODER_RGBA_AVX2_BRANCHLESS == 1
-                bytes[encoder.p] = QOI_OP_RUN | (encoder.run - 1);
-                encoder.p += encoder.run != 0;
-                encoder.run = 0;
-            #else
+            if (encoder.run >= 62) {
+                bytes[encoder.p++] = QOI_OP_RUN | 61;
+                encoder.run -= 62;
+            }
+            else if (block_runs[i] == 0) {
                 if (encoder.run > 0) {
                     bytes[encoder.p++] = QOI_OP_RUN | (encoder.run - 1);
                     encoder.run = 0;
                 }
-            #endif
-
-            for (int i = runs; i < 8; i++) {
-                qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
 
                 int index_pos = indexes_pos[i];
 
@@ -377,68 +375,13 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
                 encoder.p -= block_lengths[block_offset] == 5;
 
                 encoder.index[index_pos] = px;
-                encoder.px_prev = px;
-                encoder.px_pos += 4;
             }
-        }
-        else {
-            for (int i = runs; i < 8; i++) {
-                qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
 
-                if (px.v == encoder.px_prev.v) {
-                    encoder.run++;
-
-                    #if QOI_ENCODER_RGBA_AVX2_BRANCHLESS == 1
-                        bytes[encoder.p] = QOI_OP_RUN | 61;
-                        encoder.p += encoder.run >= 62;
-                        encoder.run -= (encoder.run >= 62) * 62;
-                    #else
-                        if (encoder.run >= 62) {
-                            bytes[encoder.p++] = QOI_OP_RUN | 61;
-                            encoder.run -= 62;
-                        }
-                    #endif
-                }
-                else {
-                    #if QOI_ENCODER_RGBA_AVX2_BRANCHLESS == 1
-                        bytes[encoder.p] = QOI_OP_RUN | (encoder.run - 1);
-                        encoder.p += encoder.run != 0;
-                        encoder.run = 0;
-                    #else
-                        if (encoder.run > 0) {
-                            bytes[encoder.p++] = QOI_OP_RUN | (encoder.run - 1);
-                            encoder.run = 0;
-                        }
-                    #endif
-
-                    int index_pos = indexes_pos[i];
-
-                    bytes[encoder.p] = QOI_OP_INDEX | index_pos;
-                    encoder.p += encoder.index[index_pos].v == px.v;
-
-                    int block_offset = i * 4;
-
-                    // The QOI_OP_RGBA byte never appears in the block_values
-                    // so we need to assume that is might be a QOI_OP_RGBA
-                    bytes[encoder.p + 0] = QOI_OP_RGBA;
-                    encoder.p += block_lengths[block_offset] == 5;
-
-                    bytes[encoder.p + 0] = block_values[block_offset + 0];
-                    bytes[encoder.p + 1] = block_values[block_offset + 1];
-                    bytes[encoder.p + 2] = block_values[block_offset + 2];
-                    bytes[encoder.p + 3] = block_values[block_offset + 3];
-
-                    encoder.p += block_lengths[block_offset] * (encoder.index[index_pos].v != px.v);
-                    encoder.p -= block_lengths[block_offset] == 5;
-
-                    encoder.index[index_pos] = px;
-                }
-
-                encoder.px_prev = px;
-                encoder.px_pos += 4;
-            }
+            encoder.px_pos += 4;
         }
     }
+
+    encoder.px_prev = *(qoi_rgba_t *)(pixels + encoder.px_pos - 4);
 
     return encoder;
 }
