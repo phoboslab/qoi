@@ -44,6 +44,7 @@ SOFTWARE.
 #include "stb_image_write.h"
 
 #define QOI_IMPLEMENTATION
+#define QOI_SIMD_AVX2
 #include "qoi.h"
 
 

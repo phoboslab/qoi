@@ -371,7 +371,7 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
 
                 // The QOI_OP_RGBA byte never appears in the block_values
                 // so we need to assume that is might be a QOI_OP_RGBA
-                bytes[encoder.p + 0] = QOI_OP_RGBA;
+                bytes[encoder.p] = QOI_OP_RGBA;
                 encoder.p += block_lengths[block_offset] == 5;
 
                 bytes[encoder.p + 0] = block_values[block_offset + 0];

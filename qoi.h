@@ -41,6 +41,13 @@ stb_image_write QOI offers 20x-50x faster encoding, 3x-4x faster decoding and
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
+// Define `QOI_SIMD_AVX2` in *one* C/C++ file before including this
+// library to enable the AVX2 implementation.
+
+#define QOI_IMPLEMENTATION
+#define QOI_SIMD_AVX2
+#include "qoi.h"
+
 // Encode and store an RGBA buffer to the file system. The qoi_desc describes
 // the input pixel data.
 qoi_write("image_new.qoi", rgba_pixels, &(qoi_desc){
@@ -457,18 +464,18 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	encoder.px_prev.rgba.b = 0;
 	encoder.px_prev.rgba.a = 255;
 	px = encoder.px_prev;
-	
+
 	encoder.px_len = desc->width * desc->height * desc->channels;
 	encoder.px_end = encoder.px_len - desc->channels;
 	channels = desc->channels;
 
 	encoder.px_pos = 0;
 
-#ifdef __AVX2__
-	if (channels == 4 && encoder.px_len > (36 + 16)) {
-		encoder = qoi_encode_rgba_avx2(pixels, bytes, encoder);
-	}
-#endif
+	#if defined(__AVX2__) && defined(QOI_SIMD_AVX2)
+		if (channels == 4 && encoder.px_len > (36 + 16)) {
+			encoder = qoi_encode_rgba_avx2(pixels, bytes, encoder);
+		}
+	#endif
 
 	while (encoder.px_pos < encoder.px_len) {
 		if (channels == 4) {
