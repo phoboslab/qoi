@@ -238,8 +238,7 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
         0, 0, 0, QOI_OP_RGB, 0, 0, 0, QOI_OP_RGB, 0, 0, 0, QOI_OP_RGB, 0, 0, 0, QOI_OP_RGB
     );
 
-    __m256i vec_rgb          = _mm256_and_si256(vec_curr, vec_mask_no_alpha);
-    __m256i vec_shifted_rgb  = _mm256_slli_epi32(vec_rgb, 8);
+    __m256i vec_shifted_rgb  = _mm256_slli_epi32(vec_curr, 8);
     __m256i vec_value_op_rgb = _mm256_or_si256(vec_code_op_rgb, vec_shifted_rgb);
 
 
@@ -288,6 +287,10 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
 #endif
 
 static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned char *bytes, qoi_encoder_t encoder) {
+    if (encoder.px_len < 4) {
+        return encoder;
+    }
+
     if (encoder.px_pos == 0) {
         qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
 

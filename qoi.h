@@ -472,7 +472,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	encoder.px_pos = 0;
 
 	#if defined(__AVX2__) && defined(QOI_SIMD_AVX2)
-		if (channels == 4 && encoder.px_len > (36 + 16)) {
+		if (channels == 4) {
 			encoder = qoi_encode_rgba_avx2(pixels, bytes, encoder);
 		}
 	#endif
