@@ -180,7 +180,7 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
      *   vec_masked_blue        : 00000000 | 000000bb | 00000000 | 00000000
      *
      *   vec_code_op_diff       : 00000000 | 00000000 | 00000000 | 01000000
-     *   vec_shifted_red        : 00000000 | 00000000 | 00000000 | 00rr0000     vec_masked_red   <<  2
+     *   vec_shifted_red        : 00000000 | 00000000 | 00000000 | 00rr0000     vec_masked_red   <<  4
      *   vec_shifted_green      : 00000000 | 00000000 | 00000000 | 0000gg00     vec_masked_green >>  6
      *   vec_shifted_blue       : 00000000 | 00000000 | 00000000 | 000000bb     vec_masked_blue  >> 16
      *
