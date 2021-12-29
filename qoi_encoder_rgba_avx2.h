@@ -347,7 +347,6 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
         qoi_encode_block_rgba_indexes(pixels + encoder.px_pos, indexes_pos);
         qoi_encode_block_rgba_values(pixels + encoder.px_pos, block_lengths, block_values);
 
-        encoder.px_pos += i * 4;
         encoder.run += i;
 
         bytes[encoder.p] = QOI_OP_RUN | 61;
@@ -355,13 +354,12 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
         encoder.run -= 62 * (encoder.run >= 62);
 
         while (i < 8) {
-            qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos);
+            int block_offset = i * 4;
 
+            qoi_rgba_t px = *(qoi_rgba_t *)(pixels + encoder.px_pos + block_offset);
             encoder.run += block_runs[i];
 
             if (QOI_LIKELY(block_runs[i] == 0)) {
-                int block_offset = i * 4;
-
                 bytes[encoder.p] = QOI_OP_RUN | (encoder.run - 1);
                 encoder.p += encoder.run > 0;
                 encoder.run = 0;
@@ -392,8 +390,9 @@ static qoi_encoder_t qoi_encode_rgba_avx2(const unsigned char *pixels, unsigned 
             }
 
             i++;
-            encoder.px_pos += 4;
         }
+
+        encoder.px_pos += 32;
     }
 
     encoder.px_prev = *(qoi_rgba_t *)(pixels + encoder.px_pos - 4);
