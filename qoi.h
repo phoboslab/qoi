@@ -425,7 +425,7 @@ typedef struct {
 #define qoi_noinline
 #endif
 
-#ifdef __AVX2__
+#if defined(__AVX2__) && defined(QOI_SIMD_AVX2)
 #include "qoi_encoder_avx2.h"
 #endif
 
