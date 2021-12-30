@@ -253,10 +253,10 @@ static void qoi_encode_block_rgba_values(const unsigned char *pixels, unsigned c
      *                                              *
      ************************************************/
 
-    __m256i vec_length_op_diff = _mm256_and_si256(vec_is_op_diff,     _mm256_set1_epi32(1));
-    __m256i vec_length_op_luma = _mm256_and_si256(vec_is_op_luma,     _mm256_set1_epi32(2));
-    __m256i vec_length_op_rgb  = _mm256_and_si256(vec_is_not_op_rgba, _mm256_set1_epi32(4));
-    __m256i vec_length_op_rgba = _mm256_and_si256(vec_is_op_rgba,     _mm256_set1_epi32(5));
+    __m256i vec_length_op_diff = _mm256_set1_epi32(1);
+    __m256i vec_length_op_luma = _mm256_set1_epi32(2);
+    __m256i vec_length_op_rgb  = _mm256_set1_epi32(4);
+    __m256i vec_length_op_rgba = _mm256_set1_epi32(5);
 
     __m256i vec_is_op_diff_luma = _mm256_or_si256(vec_is_op_diff, vec_is_op_luma);
 
