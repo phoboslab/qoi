@@ -413,8 +413,20 @@ typedef struct {
 	bytes[encoder.p++] = px.rgba.b;				\
 	bytes[encoder.p++] = px.rgba.a;
 
+#ifdef __GNUC__
+#define QOI_LIKELY(x) __builtin_expect(!!(x), 1)
+#else
+#define QOI_LIKELY(x) x
+#endif
+
+#ifdef __GNUC__
+#define qoi_noinline __attribute__((noinline))
+#else
+#define qoi_noinline
+#endif
+
 #ifdef __AVX2__
-#include "qoi_encoder_rgba_avx2.h"
+#include "qoi_encoder_avx2.h"
 #endif
 
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
@@ -472,9 +484,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	encoder.px_pos = 0;
 
 	#if defined(__AVX2__) && defined(QOI_SIMD_AVX2)
-		if (channels == 4) {
-			encoder = qoi_encode_rgba_avx2(pixels, bytes, encoder);
-		}
+		encoder = qoi_encode_avx2(pixels, bytes, encoder, channels);
 	#endif
 
 	while (encoder.px_pos < encoder.px_len) {
