@@ -308,7 +308,6 @@ static qoi_encoder_t qoi_noinline qoi_encode_avx2_rgb(const unsigned char *pixel
         __m256i vec_curr = qoi_encode_avx2_convert_rgb_to_rgba(pixels + encoder.px_pos);
 
         int i = qoi_encode_avx2_block_runs(&vec_prev, &vec_curr, block_runs);
-        i = 0;
 
         encoder.run += i;
 
