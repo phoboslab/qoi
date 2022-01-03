@@ -79,6 +79,7 @@ implementations listed below.
 - [Raylib](https://github.com/raysan5/raylib) supports decoding and encoding QOI textures through its [rtextures module](https://github.com/raysan5/raylib/blob/master/src/rtextures.c)
 - [Rebol3](https://github.com/Oldes/Rebol3/issues/39) supports decoding and encoding QOI using a native codec
 - [c-ray](https://github.com/vkoskiv/c-ray) supports QOI natively
+- [SAIL](https://github.com/HappySeaFox/sail) image decoding library, supports decoding and encoding QOI images
 
 
 ## Packages
