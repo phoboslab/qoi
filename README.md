@@ -67,6 +67,9 @@ implementations listed below.
 - https://github.com/xfmoulet/qoi (Go)
 - https://erratique.ch/software/qoic (OCaml)
 - https://github.com/kchapelier/qoijs (JavaScript)
+- https://github.com/KristofferC/QOI.jl (Julia)
+- https://github.com/shadowMitia/libqoi/ (C++)
+- https://github.com/MKCG/php-qoi (PHP)
 
 
 ## QOI Support in Other Software
