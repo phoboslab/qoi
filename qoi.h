@@ -135,8 +135,8 @@ The possible chunks are:
 2-bit tag b00
 6-bit index into the color index array: 0..63
 
-A valid encoder must not issue 7 or more consecutive QOI_OP_INDEX chunks to the
-index 0, to avoid confusion with the 8 byte end marker.
+A valid encoder must not issue 2 or more consecutive QOI_OP_INDEX chunks to the
+same index. QOI_OP_RUN should be used instead.
 
 
 .- QOI_OP_DIFF -----------.
