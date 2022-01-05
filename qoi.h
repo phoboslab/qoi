@@ -248,7 +248,7 @@ The colorspace in this qoi_desc is an enum where
 	1 = all channels are linear
 You may use the constants QOI_SRGB or QOI_LINEAR. The colorspace is purely
 informative. It will be saved to the file header, but does not affect
-en-/decoding in any way. */
+how chunks are en-/decoded. */
 
 #define QOI_SRGB   0
 #define QOI_LINEAR 1
