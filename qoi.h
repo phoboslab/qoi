@@ -1,3 +1,5 @@
+/* SPDX-License-Identifier: MIT */
+/* SPDX-FileCopyrightText: 2021 Dominic Szablewski */
 /*
 
 QOI - The "Quite OK Image" format for fast, lossless image compression

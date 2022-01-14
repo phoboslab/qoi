@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2021 Dominic Szablewski
 /*
 
 Simple benchmark suite for png, stbi and qoi

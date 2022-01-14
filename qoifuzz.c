@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2021 Dominic Szablewski
 /*
 
 clang fuzzing harness for qoi_decode

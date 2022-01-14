@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// SPDX-FileCopyrightText: 2021 Dominic Szablewski
 /*
 
 Command line tool to convert between png <> qoi format
