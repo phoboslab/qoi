@@ -76,6 +76,7 @@ implementations listed below.
 - https://github.com/shadowMitia/libqoi/ (C++)
 - https://github.com/MKCG/php-qoi (PHP)
 - https://github.com/LightHouseSoftware/qoiformats (D)
+- https://github.com/mhoward540/qoi-nim (Nim)
 
 
 ## QOI Support in Other Software
