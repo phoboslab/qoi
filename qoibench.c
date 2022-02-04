@@ -146,13 +146,20 @@ void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 		ERROR("png_jmpbuf");
 	}
 
+	int pngtype;
+	
+	if(channels==3) pngtype=PNG_COLOR_TYPE_RGB;//3 channels
+	else if (channels==1) pngtype=PNG_COLOR_TYPE_GRAY; // 1 channel
+	else if (channels==2) pngtype=PNG_COLOR_TYPE_GRAY_ALPHA; // 2 channel
+	else  pngtype = PNG_COLOR_TYPE_RGBA; //4 channels
+
 	// Output is 8bit depth, RGBA format.
 	png_set_IHDR(
 		png,
 		info,
 		w, h,
 		8,
-		channels == 3 ? PNG_COLOR_TYPE_RGB : PNG_COLOR_TYPE_RGBA,
+		pngtype,
 		PNG_INTERLACE_NONE,
 		PNG_COMPRESSION_TYPE_DEFAULT,
 		PNG_FILTER_TYPE_DEFAULT
@@ -321,7 +328,7 @@ int opt_nodecode = 0;
 int opt_noencode = 0;
 int opt_norecurse = 0;
 int opt_onlytotals = 0;
-
+int opt_forcebpp = 0;
 
 typedef struct {
 	uint64_t size;
@@ -417,7 +424,11 @@ benchmark_result_t benchmark_image(const char *path) {
 		ERROR("Error decoding header %s", path);
 	}
 
-	if (channels != 3) {
+	if(opt_forcebpp) //force a given bytes per pixel
+	{
+		channels=opt_forcebpp;
+	}
+	else if (channels != 3) {
 		channels = 4;
 	}
 
@@ -440,7 +451,17 @@ benchmark_result_t benchmark_image(const char *path) {
 		qoi_desc dc;
 		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, channels);
 		if (memcmp(pixels, pixels_qoi, w * h * channels) != 0) {
-			ERROR("QOI roundtrip pixel mismatch for %s", path);
+			int totbytes=w * h * channels;
+			unsigned char *pix=pixels;
+			unsigned char *pixq=pixels_qoi;
+			
+			for (int i=0;i<totbytes;i++)
+ 			{ 	
+ 				if(pix[i]!=pixq[i])
+ 				{
+ 					ERROR("QOI roundtrip pixel mismatch for %s at byte %d of %d", path,i,totbytes);
+ 				}
+ 			}
 		}
 		free(pixels_qoi);
 	}
@@ -467,14 +488,14 @@ benchmark_result_t benchmark_image(const char *path) {
 
 			BENCHMARK_FN(opt_nowarmup, opt_runs, res.stbi.decode_time, {
 				int dec_w, dec_h, dec_channels;
-				void *dec_p = stbi_load_from_memory(encoded_png, encoded_png_size, &dec_w, &dec_h, &dec_channels, 4);
+				void *dec_p = stbi_load_from_memory(encoded_png, encoded_png_size, &dec_w, &dec_h, &dec_channels, channels);
 				free(dec_p);
 			});
 		}
 
 		BENCHMARK_FN(opt_nowarmup, opt_runs, res.qoi.decode_time, {
 			qoi_desc desc;
-			void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &desc, 4);
+			void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &desc, channels);
 			free(dec_p);
 		});
 	}
@@ -553,7 +574,10 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 
 		if (!has_shown_head) {
 			has_shown_head = 1;
-			printf("## Benchmarking %s/*.png -- %d runs\n\n", path, opt_runs);
+			printf("## Benchmarking %s/*.png -- %d runs ", path, opt_runs);
+			if(opt_forcebpp)
+				printf("-- forcing %d bytes per pixel\n\n", opt_forcebpp);
+			printf("\n\n");
 		}
 
 		char *file_path = malloc(strlen(file->d_name) + strlen(path)+8);
@@ -562,7 +586,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 		benchmark_result_t res = benchmark_image(file_path);
 
 		if (!opt_onlytotals) {
-			printf("## %s size: %dx%d\n", file_path, res.w, res.h);
+			printf("## %s size_pix: %dx%d raw_size_kb:%ld\n", file_path, res.w, res.h, res.raw_size/1024);
 			benchmark_print_result(res);
 		}
 
@@ -613,6 +637,7 @@ int main(int argc, char **argv) {
 		printf("    --nodecode ... don't run decoders\n");
 		printf("    --norecurse .. don't descend into directories\n");
 		printf("    --onlytotals . don't print individual image results\n");
+		printf("    --forcebpp # . force the requested bytes per pixel\n");
 		printf("Examples\n");
 		printf("    qoibench 10 images/textures/\n");
 		printf("    qoibench 1 images/textures/ --nopng --nowarmup\n");
@@ -627,6 +652,12 @@ int main(int argc, char **argv) {
 		else if (strcmp(argv[i], "--nodecode") == 0) { opt_nodecode = 1; }
 		else if (strcmp(argv[i], "--norecurse") == 0) { opt_norecurse = 1; }
 		else if (strcmp(argv[i], "--onlytotals") == 0) { opt_onlytotals = 1; }
+		else if (strcmp(argv[i], "--forcebpp") == 0) { if(i+1<argc)
+									{
+									opt_forcebpp = atoi(argv[i+1]); 
+									i++;
+									}
+								}
 		else { ERROR("Unknown option %s", argv[i]); }
 	}
 
