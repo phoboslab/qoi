@@ -51,7 +51,7 @@ implementations listed below.
 - https://apps.apple.com/br/app/qoiconverterx/id1602159820 QOI <=> PNG converter available on the Mac App Store
 - https://github.com/kaetemi/qoi-max - QOI Bitmap I/O Plugin for 3ds Max
 - https://raylibtech.itch.io/rtexviewer - texture viewer, supports QOI
-
+- https://raylibtech.itch.io/rtexpacker - texture packer, supports QOI
 
 ## Implementations & Bindings of QOI
 
