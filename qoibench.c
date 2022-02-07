@@ -472,7 +472,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			BENCHMARK_FN(opt_nowarmup, opt_runs, res.stbi.decode_time, {
 				int dec_w, dec_h, dec_channels;
 				void *dec_p = stbi_load_from_memory(encoded_png, encoded_png_size, &dec_w, &dec_h, &dec_channels, 4);
-				free(dec_p);
+				stbi_image_free(dec_p);
 			});
 		}
 
@@ -514,7 +514,7 @@ benchmark_result_t benchmark_image(const char *path) {
 		});
 	}
 
-	free(pixels);
+	stbi_image_free(pixels);
 	free(encoded_png);
 	free(encoded_qoi);
 
