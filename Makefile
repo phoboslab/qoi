@@ -1,7 +1,7 @@
 CC ?= gcc
-CFLAGS_BENCH ?= -std=gnu99 -O3
+CFLAGS_BENCH ?= -std=gnu99 -O3 -Wall -Wextra
 LFLAGS_BENCH ?= -lpng
-CFLAGS_CONV ?= -std=c99 -O3
+CFLAGS_CONV ?= -std=c99 -O3 -Wall -Wextra -pedantic-errors
 
 TARGET_BENCH ?= qoibench
 TARGET_CONV ?= qoiconv
