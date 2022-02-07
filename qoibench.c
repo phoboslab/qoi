@@ -215,18 +215,18 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 		.size = size,
 		.data = data
 	};
-	
+
 	png_set_read_fn(png, &read_data, png_decode_callback);
 	png_set_sig_bytes(png, 0);
 	png_read_info(png, info);
-	
+
 	png_uint_32 w, h;
 	int bitDepth, colorType, interlaceType;
 	png_get_IHDR(png, info, &w, &h, &bitDepth, &colorType, &interlaceType, NULL, NULL);
-	
+
 	// 16 bit -> 8 bit
 	png_set_strip_16(png);
-	
+
 	// 1, 2, 4 bit -> 8 bit
 	if (bitDepth < 8) {
 		png_set_packing(png);
@@ -235,7 +235,7 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	if (colorType & PNG_COLOR_MASK_PALETTE) {
 		png_set_expand(png);
 	}
-	
+
 	if (!(colorType & PNG_COLOR_MASK_COLOR)) {
 		png_set_gray_to_rgb(png);
 	}
@@ -244,28 +244,28 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	if (png_get_valid(png, info, PNG_INFO_tRNS)) {
 		png_set_tRNS_to_alpha(png);
 	}
-	
+
 	// make sure every pixel has an alpha value
 	if (!(colorType & PNG_COLOR_MASK_ALPHA)) {
 		png_set_filler(png, 255, PNG_FILLER_AFTER);
 	}
-	
+
 	png_read_update_info(png, info);
 
 	unsigned char* out = malloc(w * h * 4);
 	*out_w = w;
 	*out_h = h;
-	
+
 	// png_uint_32 rowBytes = png_get_rowbytes(png, info);
 	png_bytep row_pointers[h];
 	for (png_uint_32 row = 0; row < h; row++ ) {
 		row_pointers[row] = (png_bytep)(out + (row * w * 4));
 	}
-	
+
 	png_read_image(png, row_pointers);
 	png_read_end(png, info);
 	png_destroy_read_struct( &png, &info, NULL);
-	
+
 	return out;
 }
 
@@ -358,16 +358,16 @@ void benchmark_print_result(benchmark_result_t res) {
 	printf("        decode ms   encode ms   decode mpps   encode mpps   size kb    rate\n");
 	if (!opt_nopng) {
 		printf(
-			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
-			(double)res.libpng.decode_time/1000000.0, 
-			(double)res.libpng.encode_time/1000000.0, 
+			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n",
+			(double)res.libpng.decode_time/1000000.0,
+			(double)res.libpng.encode_time/1000000.0,
 			(res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time/1000.0) : 0),
 			(res.libpng.encode_time > 0 ? px / ((double)res.libpng.encode_time/1000.0) : 0),
 			res.libpng.size/1024,
 			((double)res.libpng.size/(double)res.raw_size) * 100.0
 		);
 		printf(
-			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
+			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n",
 			(double)res.stbi.decode_time/1000000.0,
 			(double)res.stbi.encode_time/1000000.0,
 			(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
@@ -377,7 +377,7 @@ void benchmark_print_result(benchmark_result_t res) {
 		);
 	}
 	printf(
-		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
+		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n",
 		(double)res.qoi.decode_time/1000000.0,
 		(double)res.qoi.encode_time/1000000.0,
 		(res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time/1000.0) : 0),
@@ -425,7 +425,7 @@ benchmark_result_t benchmark_image(const char *path) {
 	void *encoded_png = fload(path, &encoded_png_size);
 	void *encoded_qoi = qoi_encode(pixels, &(qoi_desc){
 			.width = w,
-			.height = h, 
+			.height = h,
 			.channels = channels,
 			.colorspace = QOI_SRGB
 		}, &encoded_qoi_size);
@@ -501,7 +501,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			int enc_size;
 			void *enc_p = qoi_encode(pixels, &(qoi_desc){
 				.width = w,
-				.height = h, 
+				.height = h,
 				.channels = channels,
 				.colorspace = QOI_SRGB
 			}, &enc_size);
@@ -541,7 +541,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 	}
 
 	benchmark_result_t dir_total = {0};
-	
+
 	int has_shown_head = 0;
 	for (int i = 0; (file = readdir(dir)) != NULL; i++) {
 		if (strcmp(file->d_name + strlen(file->d_name) - 4, ".png") != 0) {
@@ -555,7 +555,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 
 		char *file_path = malloc(strlen(file->d_name) + strlen(path)+8);
 		sprintf(file_path, "%s/%s", path, file->d_name);
-		
+
 		benchmark_result_t res = benchmark_image(file_path);
 
 		if (!opt_onlytotals) {
@@ -564,7 +564,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 		}
 
 		free(file_path);
-		
+
 		dir_total.count++;
 		dir_total.raw_size += res.raw_size;
 		dir_total.px += res.px;
