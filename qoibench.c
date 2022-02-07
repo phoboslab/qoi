@@ -123,7 +123,7 @@ typedef struct {
 	unsigned char *data;
 } libpng_write_t;
 
-void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
+static void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
 	libpng_write_t *write_data = (libpng_write_t*)png_get_io_ptr(png_ptr);
 	if (write_data->size + length >= write_data->capacity) {
 		ERROR("PNG write");
@@ -132,7 +132,7 @@ void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t leng
 	write_data->size += length;
 }
 
-void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
+static void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) {
 		ERROR("png_create_write_struct");
@@ -187,7 +187,7 @@ typedef struct {
 	unsigned char *data;
 } libpng_read_t;
 
-void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
+static void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	libpng_read_t *read_data = (libpng_read_t*)png_get_io_ptr(png);
 	if (read_data->pos + length > read_data->size) {
 		ERROR("PNG read %" PRIuPTR " bytes at pos %d (size: %" PRIuPTR ")", length, read_data->pos, read_data->size);
@@ -196,13 +196,13 @@ void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	read_data->pos += length;
 }
 
-void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
+static void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
 	// Ignore warnings about sRGB profiles and such.
 	(void)png_ptr;
 	(void)warning_msg;
 }
 
-void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
+static void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, png_warning_callback);
 	if (!png) {
 		ERROR("png_create_read_struct");
@@ -276,7 +276,7 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 // -----------------------------------------------------------------------------
 // stb_image encode callback
 
-void stbi_write_callback(void *context, void *data, int size) {
+static void stbi_write_callback(void *context, void *data, int size) {
 	(void)data;
 	int *encoded_size = (int *)context;
 	*encoded_size += size;
@@ -288,7 +288,7 @@ void stbi_write_callback(void *context, void *data, int size) {
 // -----------------------------------------------------------------------------
 // function to load a whole file into memory
 
-void *fload(const char *path, int *out_size) {
+static void *fload(const char *path, int *out_size) {
 	FILE *fh = fopen(path, "rb");
 	if (!fh) {
 		ERROR("Can't open file");
@@ -317,14 +317,14 @@ void *fload(const char *path, int *out_size) {
 // benchmark runner
 
 
-int opt_runs = 1;
-int opt_nopng = 0;
-int opt_nowarmup = 0;
-int opt_noverify = 0;
-int opt_nodecode = 0;
-int opt_noencode = 0;
-int opt_norecurse = 0;
-int opt_onlytotals = 0;
+static int opt_runs = 1;
+static int opt_nopng = 0;
+static int opt_nowarmup = 0;
+static int opt_noverify = 0;
+static int opt_nodecode = 0;
+static int opt_noencode = 0;
+static int opt_norecurse = 0;
+static int opt_onlytotals = 0;
 
 
 typedef struct {
@@ -345,7 +345,7 @@ typedef struct {
 } benchmark_result_t;
 
 
-void benchmark_print_result(benchmark_result_t res) {
+static void benchmark_print_result(benchmark_result_t res) {
 	res.px /= res.count;
 	res.raw_size /= res.count;
 	res.libpng.encode_time /= res.count;
@@ -409,7 +409,7 @@ void benchmark_print_result(benchmark_result_t res) {
 	} while (0)
 
 
-benchmark_result_t benchmark_image(const char *path) {
+static benchmark_result_t benchmark_image(const char *path) {
 	int encoded_png_size;
 	int encoded_qoi_size;
 	int w;
@@ -521,7 +521,7 @@ benchmark_result_t benchmark_image(const char *path) {
 	return res;
 }
 
-void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
+static void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 	DIR *dir = opendir(path);
 	if (!dir) {
 		ERROR("Couldn't open directory %s", path);
