@@ -118,7 +118,7 @@ static uint64_t ns() {
 
 typedef struct {
 	int size;
-	int capacity;
+	png_size_t capacity;
 	unsigned char *data;
 } libpng_write_t;
 
@@ -182,7 +182,7 @@ void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 
 typedef struct {
 	int pos;
-	int size;
+	png_size_t size;
 	unsigned char *data;
 } libpng_read_t;
 
