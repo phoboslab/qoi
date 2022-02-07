@@ -198,6 +198,8 @@ void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 
 void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
 	// Ignore warnings about sRGB profiles and such.
+	(void)png_ptr;
+	(void)warning_msg;
 }
 
 void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
@@ -275,6 +277,7 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 // stb_image encode callback
 
 void stbi_write_callback(void *context, void *data, int size) {
+	(void)data;
 	int *encoded_size = (int *)context;
 	*encoded_size += size;
 	// In theory we'd need to do another malloc(), memcpy() and free() here to 
