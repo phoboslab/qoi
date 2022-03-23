@@ -88,6 +88,7 @@ implementations listed below.
 - [c-ray](https://github.com/vkoskiv/c-ray) supports QOI natively
 - [SAIL](https://github.com/HappySeaFox/sail) image decoding library, supports decoding and encoding QOI images
 - [Orx](https://github.com/orx/orx) 2D game engine, supports QOI natively
+- [IrfanView](https://www.irfanview.com) supports decoding and encoding QOI through its Formats plugin
 
 
 ## Packages
