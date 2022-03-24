@@ -89,7 +89,8 @@ implementations listed below.
 - [SAIL](https://github.com/HappySeaFox/sail) image decoding library, supports decoding and encoding QOI images
 - [Orx](https://github.com/orx/orx) 2D game engine, supports QOI natively
 - [IrfanView](https://www.irfanview.com) supports decoding and encoding QOI through its Formats plugin
-
+- [ImageMagick](https://github.com/ImageMagick/ImageMagick) supports decoding and encoding QOI, since 7.1.0-20
+- [barebox](https://barebox.org) bootloader, supports decoding QOI images for splash logo, since v2022.03.0
 
 ## Packages
 
