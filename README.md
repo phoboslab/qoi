@@ -52,6 +52,7 @@ implementations listed below.
 - https://github.com/kaetemi/qoi-max - QOI Bitmap I/O Plugin for 3ds Max
 - https://raylibtech.itch.io/rtexviewer - texture viewer, supports QOI
 - https://raylibtech.itch.io/rtexpacker - texture packer, supports QOI
+- https://gitlab.com/dan9er/farbfeld-convert-qoi - QOI <=> farbfeld converter
 
 ## Implementations & Bindings of QOI
 
