@@ -53,6 +53,8 @@ implementations listed below.
 - https://raylibtech.itch.io/rtexviewer - texture viewer, supports QOI
 - https://raylibtech.itch.io/rtexpacker - texture packer, supports QOI
 - https://github.com/DmitriySalnikov/godot_qoi - QOI GDNative Addon for Godot Engine
+- https://gitlab.com/dan9er/farbfeld-convert-qoi - QOI <=> farbfeld converter
+
 
 ## Implementations & Bindings of QOI
 
@@ -78,6 +80,7 @@ implementations listed below.
 - https://github.com/MKCG/php-qoi (PHP)
 - https://github.com/LightHouseSoftware/qoiformats (D)
 - https://github.com/mhoward540/qoi-nim (Nim)
+- https://github.com/wx257osn2/qoixx (C++)
 
 
 ## QOI Support in Other Software
@@ -88,7 +91,9 @@ implementations listed below.
 - [c-ray](https://github.com/vkoskiv/c-ray) supports QOI natively
 - [SAIL](https://github.com/HappySeaFox/sail) image decoding library, supports decoding and encoding QOI images
 - [Orx](https://github.com/orx/orx) 2D game engine, supports QOI natively
-
+- [IrfanView](https://www.irfanview.com) supports decoding and encoding QOI through its Formats plugin
+- [ImageMagick](https://github.com/ImageMagick/ImageMagick) supports decoding and encoding QOI, since 7.1.0-20
+- [barebox](https://barebox.org) bootloader, supports decoding QOI images for splash logo, since v2022.03.0
 
 ## Packages
 
