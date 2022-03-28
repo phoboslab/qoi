@@ -95,6 +95,7 @@ implementations listed below.
 - [ImageMagick](https://github.com/ImageMagick/ImageMagick) supports decoding and encoding QOI, since 7.1.0-20
 - [barebox](https://barebox.org) bootloader, supports decoding QOI images for splash logo, since v2022.03.0
 - [KorGE](https://korge.org) & KorIM Kotlin 2D game engine and imaging library, supports decoding and encoding QOI natively since 2.7.0
+- [DOjS](https://github.com/SuperIlu/DOjS) DOS JavaScript Canvas implementation supports loading QOI files
 
 ## Packages
 
