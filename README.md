@@ -81,6 +81,7 @@ implementations listed below.
 - https://github.com/LightHouseSoftware/qoiformats (D)
 - https://github.com/mhoward540/qoi-nim (Nim)
 - https://github.com/wx257osn2/qoixx (C++)
+- https://github.com/Tiefseetauchner/lr-paint (Processing)
 
 
 ## QOI Support in Other Software
