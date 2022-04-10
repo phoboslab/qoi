@@ -82,6 +82,7 @@ implementations listed below.
 - https://github.com/mhoward540/qoi-nim (Nim)
 - https://github.com/wx257osn2/qoixx (C++)
 - https://github.com/musabkilic/qoi-decoder (Python)
+- https://github.com/mathpn/py-qoi (Python)
 
 ## QOI Support in Other Software
 
