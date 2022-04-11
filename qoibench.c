@@ -540,9 +540,6 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 		rewinddir(dir);
 	}
 
-	float total_percentage = 0;
-	int total_size = 0;
-
 	benchmark_result_t dir_total = {0};
 	
 	int has_shown_head = 0;
