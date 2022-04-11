@@ -424,13 +424,12 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	channels = desc->channels;
 
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
+		px.rgba.r = pixels[px_pos + 0];
+		px.rgba.g = pixels[px_pos + 1];
+		px.rgba.b = pixels[px_pos + 2];
+
 		if (channels == 4) {
-			px = *(qoi_rgba_t *)(pixels + px_pos);
-		}
-		else {
-			px.rgba.r = pixels[px_pos + 0];
-			px.rgba.g = pixels[px_pos + 1];
-			px.rgba.b = pixels[px_pos + 2];
+			px.rgba.a = pixels[px_pos + 3];
 		}
 
 		if (px.v == px_prev.v) {
@@ -598,13 +597,12 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 			index[QOI_COLOR_HASH(px) % 64] = px;
 		}
 
+		pixels[px_pos + 0] = px.rgba.r;
+		pixels[px_pos + 1] = px.rgba.g;
+		pixels[px_pos + 2] = px.rgba.b;
+		
 		if (channels == 4) {
-			*(qoi_rgba_t*)(pixels + px_pos) = px;
-		}
-		else {
-			pixels[px_pos + 0] = px.rgba.r;
-			pixels[px_pos + 1] = px.rgba.g;
-			pixels[px_pos + 2] = px.rgba.b;
+			pixels[px_pos + 3] = px.rgba.a;
 		}
 	}
 
