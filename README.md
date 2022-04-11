@@ -83,6 +83,7 @@ implementations listed below.
 - https://github.com/wx257osn2/qoixx (C++)
 - https://github.com/amstan/qoi-fpga (FPGA: verilog)
 - https://github.com/musabkilic/qoi-decoder (Python)
+- https://github.com/mathpn/py-qoi (Python)
 
 
 ## QOI Support in Other Software
