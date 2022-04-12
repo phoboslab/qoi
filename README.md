@@ -85,6 +85,7 @@ implementations listed below.
 - https://github.com/amstan/qoi-fpga (FPGA: verilog)
 - https://github.com/musabkilic/qoi-decoder (Python)
 - https://github.com/mathpn/py-qoi (Python)
+- https://github.com/JohannesFriedrich/qoi4R (R)
 
 
 ## QOI Support in Other Software
