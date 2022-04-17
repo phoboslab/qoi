@@ -86,7 +86,7 @@ implementations listed below.
 - https://github.com/musabkilic/qoi-decoder (Python)
 - https://github.com/mathpn/py-qoi (Python)
 - https://github.com/JohannesFriedrich/qoi4R (R)
-
+- https://github.com/shraiwi/mini-qoi (C, streaming decoder)
 
 ## QOI Support in Other Software
 
