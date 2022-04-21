@@ -41,6 +41,20 @@ If this is a limitation for your use case, please look into any of the other
 implementations listed below.
 
 
+## Improvements, New Versions and Contributing
+
+The QOI format has been finalized. It was a conscious decision to **not** have a
+version number in the file header. If you have a working QOI implementation today, 
+you can rest assured that it will be compatible with all QOI files tomorrow.
+
+There are a lot of interesting ideas for a successor of QOI, but none of these will 
+be implemented here. That doesn't mean you shouldn't experiment with QOI, but please
+be aware that pull requests that change the format will not be accepted.
+
+Likewise, pull requests for performance improvements will probably not be accepted
+either, as this "reference implementation" tries to be as easy to read as possible.
+
+
 ## Tools
 
 - https://github.com/floooh/qoiview - native QOI viewer
