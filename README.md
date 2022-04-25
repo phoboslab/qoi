@@ -74,6 +74,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 
 - https://github.com/pfusik/qoi-ci (Ć, transpiled to C, C++, C#, Java, JavaScript, Python and Swift)
 - https://github.com/kodonnell/qoi (Python)
+- https://github.com/JaffaKetchup/dqoi (Dart, with Flutter support)
 - https://github.com/Cr4xy/lua-qoi (Lua)
 - https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
 - https://github.com/saharNooby/qoi-java (Java)
