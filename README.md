@@ -102,6 +102,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://github.com/mathpn/py-qoi (Python)
 - https://github.com/JohannesFriedrich/qoi4R (R)
 - https://github.com/shraiwi/mini-qoi (C, streaming decoder)
+- https://github.com/10maurycy10/libqoi/ (Rust)
 
 ## QOI Support in Other Software
 
