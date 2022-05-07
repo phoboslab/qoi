@@ -103,6 +103,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://github.com/JohannesFriedrich/qoi4R (R)
 - https://github.com/shraiwi/mini-qoi (C, streaming decoder)
 - https://github.com/10maurycy10/libqoi/ (Rust)
+- https://github.com/0xd34df00d/hsqoi (Haskell)
 
 ## QOI Support in Other Software
 
@@ -129,5 +130,3 @@ These implementations are based on the pre-release version of QOI. Resulting fil
 
 - https://github.com/ChevyRay/qoi_rs (Rust)
 - https://github.com/panzi/jsqoi (TypeScript)
-- https://github.com/0xd34df00d/hsqoi (Haskell)
-
