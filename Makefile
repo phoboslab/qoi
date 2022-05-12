@@ -1,4 +1,4 @@
-CC := gcc
+CC ?= gcc
 CFLAGS_BENCH := -std=gnu99 -O3
 LFLAGS_BENCH := -lpng
 CFLAGS_CONV := -std=c99 -O3
@@ -19,5 +19,4 @@ $(TARGET_CONV):$(TARGET_CONV).c
 
 .PHONY: clean
 clean:
-	$(RM) $(TARGET_BENCH) $(TARGET_CONV) $(OBJS) $(DEPS)
--include $(DEPS)
+	$(RM) $(TARGET_BENCH) $(TARGET_CONV)
