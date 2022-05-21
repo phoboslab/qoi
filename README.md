@@ -104,6 +104,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://github.com/shraiwi/mini-qoi (C, streaming decoder)
 - https://github.com/10maurycy10/libqoi/ (Rust)
 - https://github.com/0xd34df00d/hsqoi (Haskell)
+- https://github.com/418Coffee/qoi-v (V)
 
 ## QOI Support in Other Software
 
