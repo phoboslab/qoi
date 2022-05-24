@@ -119,6 +119,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [barebox](https://barebox.org) bootloader, supports decoding QOI images for splash logo, since v2022.03.0
 - [KorGE](https://korge.org) & KorIM Kotlin 2D game engine and imaging library, supports decoding and encoding QOI natively since 2.7.0
 - [DOjS](https://github.com/SuperIlu/DOjS) DOS JavaScript Canvas implementation supports loading QOI files
+- [XnView MP](https://www.xnview.com/en/xnviewmp/) supports decoding QOI since 1.00
 
 ## Packages
 
