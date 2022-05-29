@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  ci-ubuntu:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/cache@v2
+      with:
+        path: images
+        key: key
+    - id: cached
+      uses: andstor/file-existence-action@v1
+      with:
+        files: images
+    - name: get benchmark suite
+      if: steps.cached.outputs.files_exists == 'false'
+      shell: bash
+      run: curl https://qoiformat.org/benchmark/qoi_benchmark_suite.tar | tar x
+    - name: build
+      shell: bash
+      run: make -j
+    - name: run qoiconv
+      shell: bash
+      run: |
+        bin/qoiconv images/icon_64/actions-go-home.png /tmp/test.qoi
+        bin/qoiconv /tmp/test.qoi /tmp/test.png
+        bin/qoiconv /tmp/test.png /tmp/test2.qoi
+        diff /tmp/test.qoi /tmp/test2.qoi
+        bin/qoiconv /tmp/test2.qoi /tmp/test2.png
+        diff /tmp/test.png /tmp/test2.png
+    - name: run qoibench
+      shell: bash
+      run: bin/qoibench 1 images --nowarmup
