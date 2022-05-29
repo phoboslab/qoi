@@ -657,7 +657,7 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 		return NULL;
 	}
 
-	bytes_read = fread(data, 1, size, f);
+	bytes_read = (int)fread(data, 1, size, f);
 	fclose(f);
 
 	pixels = qoi_decode(data, bytes_read, desc, channels);
