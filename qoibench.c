@@ -34,7 +34,6 @@ SOFTWARE.
 #include <stdio.h>
 #include <dirent.h>
 #include <png.h>
-#include <inttypes.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -190,7 +189,7 @@ typedef struct {
 static void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	libpng_read_t *read_data = (libpng_read_t*)png_get_io_ptr(png);
 	if (read_data->pos + length > read_data->size) {
-		ERROR("PNG read %" PRIuPTR " bytes at pos %d (size: %" PRIuPTR ")", length, read_data->pos, read_data->size);
+		ERROR("PNG read %zu bytes at pos %d (size: %zu)", length, read_data->pos, read_data->size);
 	}
 	memcpy(data, read_data->data + read_data->pos, length);
 	read_data->pos += length;
@@ -362,7 +361,7 @@ static void benchmark_print_result(benchmark_result_t res) {
 	printf("        decode ms   encode ms   decode mpps   encode mpps   size kb    rate\n");
 	if (!opt_nopng) {
 		printf(
-			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8" PRIu64 "   %4.1f%%\n",
+			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8zu   %4.1f%%\n",
 			(double)res.libpng.decode_time/1000000.0,
 			(double)res.libpng.encode_time/1000000.0,
 			(res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time/1000.0) : 0),
@@ -371,7 +370,7 @@ static void benchmark_print_result(benchmark_result_t res) {
 			((double)res.libpng.size/(double)res.raw_size) * 100.0
 		);
 		printf(
-			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8" PRIu64 "   %4.1f%%\n",
+			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8zu   %4.1f%%\n",
 			(double)res.stbi.decode_time/1000000.0,
 			(double)res.stbi.encode_time/1000000.0,
 			(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
@@ -381,7 +380,7 @@ static void benchmark_print_result(benchmark_result_t res) {
 		);
 	}
 	printf(
-		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8" PRIu64 "   %4.1f%%\n",
+		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8zu   %4.1f%%\n",
 		(double)res.qoi.decode_time/1000000.0,
 		(double)res.qoi.encode_time/1000000.0,
 		(res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time/1000.0) : 0),
