@@ -2,7 +2,11 @@
 
 Command line tool to convert between png <> qoi format
 
-Requires "stb_image.h" and "stb_image_write.h"
+Requires:
+	-"stb_image.h" (https://github.com/nothings/stb/blob/master/stb_image.h)
+	-"stb_image_write.h" (https://github.com/nothings/stb/blob/master/stb_image_write.h)
+	-"qoi.h" (https://github.com/phoboslab/qoi/blob/master/qoi.h)
+
 Compile with: 
 	gcc qoiconv.c -std=c99 -O3 -o qoiconv
 
