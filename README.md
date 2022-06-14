@@ -68,6 +68,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://raylibtech.itch.io/rtexpacker - texture packer, supports QOI
 - https://github.com/DmitriySalnikov/godot_qoi - QOI GDNative Addon for Godot Engine
 - https://gitlab.com/dan9er/farbfeld-convert-qoi - QOI <=> farbfeld converter
+- https://github.com/xiaozhuai/jetbrains-qoi - [QOI Support](https://plugins.jetbrains.com/plugin/19352-qoi-support) for Jetbrains' IDE.
 
 
 ## Implementations & Bindings of QOI
