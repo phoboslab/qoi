@@ -108,6 +108,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://github.com/418Coffee/qoi-v (V)
 - https://github.com/Imagine-Programming/QoiImagePlugin (PureBasic)
 - https://github.com/Fabien-Chouteau/qoi-spark (Ada/SPARK formally proven)
+- https://github.com/mzgreen/qoi-kotlin (Kotlin Multiplatform)
 
 ## QOI Support in Other Software
 
