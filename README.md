@@ -110,6 +110,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://github.com/Imagine-Programming/QoiImagePlugin (PureBasic)
 - https://github.com/Fabien-Chouteau/qoi-spark (Ada/SPARK formally proven)
 - https://github.com/mzgreen/qoi-kotlin (Kotlin Multiplatform)
+- https://github.com/Aftersol/Simplified-QOI-Codec (C99, streaming encoder and decoder, freestanding)
 
 ## QOI Support in Other Software
 
@@ -126,6 +127,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [KorGE](https://korge.org) & KorIM Kotlin 2D game engine and imaging library, supports decoding and encoding QOI natively since 2.7.0
 - [DOjS](https://github.com/SuperIlu/DOjS) DOS JavaScript Canvas implementation supports loading QOI files
 - [XnView MP](https://www.xnview.com/en/xnviewmp/) supports decoding QOI since 1.00
+
 
 ## Packages
 
