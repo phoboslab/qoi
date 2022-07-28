@@ -128,7 +128,6 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [DOjS](https://github.com/SuperIlu/DOjS) DOS JavaScript Canvas implementation supports loading QOI files
 - [XnView MP](https://www.xnview.com/en/xnviewmp/) supports decoding QOI since 1.00
 
-
 ## Packages
 
 [AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
