@@ -111,6 +111,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - https://github.com/Fabien-Chouteau/qoi-spark (Ada/SPARK formally proven)
 - https://github.com/mzgreen/qoi-kotlin (Kotlin Multiplatform)
 - https://github.com/Aftersol/Simplified-QOI-Codec (C99, streaming encoder and decoder, freestanding)
+- https://github.com/AuburnSounds/gamut (D)
 
 ## QOI Support in Other Software
 
