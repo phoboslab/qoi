@@ -431,7 +431,7 @@ benchmark_result_t benchmark_image(const char *path) {
 		}, &encoded_qoi_size);
 
 	if (!pixels || !encoded_qoi || !encoded_png) {
-		ERROR("Error decoding %s", path);
+		ERROR("Error encoding %s", path);
 	}
 
 	// Verify QOI Output
