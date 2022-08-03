@@ -58,7 +58,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 ## Tools
 
 - https://github.com/floooh/qoiview - native QOI viewer
-- https://github.com/pfusik/qoi-ci/releases/tag/qoi-ci-1.1.1 - QOI Plugin installer for GIMP, Imagine, Paint.NET and XnView MP
+- https://github.com/pfusik/qoi-ci/releases/tag/qoi-ci-1.1.2 - QOI Plugin installer for GIMP, Imagine, Paint.NET and XnView
 - https://github.com/iOrange/QoiFileTypeNet/releases/tag/v0.2 - QOI Plugin for Paint.NET
 - https://github.com/iOrange/QOIThumbnailProvider - Add thumbnails for QOI images in Windows Explorer
 - https://github.com/Tom94/tev - another native QOI viewer (allows pixel peeping and comparison with other image formats)
