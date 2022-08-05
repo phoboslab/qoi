@@ -122,6 +122,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [mzgreen/qoi-kotlin](https://github.com/mzgreen/qoi-kotlin) - Kotlin Multiplatform
 - [Aftersol/Simplified-QOI-Codec](https://github.com/Aftersol/Simplified-QOI-Codec) - C99, streaming encoder and decoder, freestanding
 - [AuburnSounds/gamut](https://github.com/AuburnSounds/gamut) - D
+- [AngusJohnson/TQoiImage](https://github.com/AngusJohnson/TQoiImage) - Delphi
 
 ## QOI Support in Other Software
 
