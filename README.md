@@ -81,6 +81,8 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Ben1138/unity-qo](https://github.com/Ben1138/unity-qoi) - QOI support for the Unity3D Game Engine
 - [xiaozhuai/jetbrains-qo](https://github.com/xiaozhuai/jetbrains-qoi) - [QOI Support](https://plugins.jetbrains.com/plugin/19352-qoi-support) for Jetbrains' IDE.
 - [serge-ivamov/QOIql](https://github.com/serge-ivamov/QOIql) - MacOS QuickLook plugin for QOI
+- [tobozo/kde-thumbnailer-qoi](https://github.com/tobozo/kde-thumbnailer-qoi) - QOI Thumbnailer for KDE
+- [walksanatora/qoi-thumbnailer-nemo](https://github.com/walksanatora/qoi-thumbnailer-nemo) - QOI Thumbnailer for Nemo
 
 
 ## Implementations & Bindings of QOI
