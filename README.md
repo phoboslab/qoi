@@ -67,77 +67,77 @@ either, as this "reference implementation" tries to be as easy to read as possib
 
 ## Tools
 
-- https://github.com/floooh/qoiview - native QOI viewer
-- https://github.com/pfusik/qoi-ci/releases - QOI Plugin installer for GIMP, Imagine, Paint.NET and XnView
-- https://github.com/iOrange/QoiFileTypeNet/releases - QOI Plugin for Paint.NET
-- https://github.com/iOrange/QOIThumbnailProvider - Add thumbnails for QOI images in Windows Explorer
-- https://github.com/Tom94/tev - another native QOI viewer (allows pixel peeping and comparison with other image formats)
-- https://apps.apple.com/br/app/qoiconverterx/id1602159820 QOI <=> PNG converter available on the Mac App Store
-- https://github.com/kaetemi/qoi-max - QOI Bitmap I/O Plugin for 3ds Max
-- https://raylibtech.itch.io/rtexviewer - texture viewer, supports QOI
-- https://raylibtech.itch.io/rtexpacker - texture packer, supports QOI
-- https://github.com/DmitriySalnikov/godot_qoi - QOI GDNative Addon for Godot Engine
-- https://gitlab.com/dan9er/farbfeld-convert-qoi - QOI <=> farbfeld converter
-- https://github.com/Ben1138/unity-qoi - QOI support for the Unity3D Game Engine
-- https://github.com/xiaozhuai/jetbrains-qoi - [QOI Support](https://plugins.jetbrains.com/plugin/19352-qoi-support) for Jetbrains' IDE.
+- [floooh/qoiview](https://github.com/floooh/qoiview) - native QOI viewer
+- [pfusik/qoi-ci](https://github.com/pfusik/qoi-ci/releases) - QOI Plugin installer for GIMP, Imagine, Paint.NET and XnView
+- [iOrange/QoiFileTypeNet](https://github.com/iOrange/QoiFileTypeNet/releases) - QOI Plugin for Paint.NET
+- [iOrange/QOIThumbnailProvider](https://github.com/iOrange/QOIThumbnailProvider) - Add thumbnails for QOI images in Windows Explorer
+- [Tom94/tev](https://github.com/Tom94/tev) - another native QOI viewer (allows pixel peeping and comparison with other image formats)
+- [qoiconverterx](https://apps.apple.com/br/app/qoiconverterx/id1602159820) QOI <=> PNG converter available on the Mac App Store
+- [kaetemi/qoi-ma](https://github.com/kaetemi/qoi-max) - QOI Bitmap I/O Plugin for 3ds Max
+- [rtexviewer](https://raylibtech.itch.io/rtexviewer) - texture viewer, supports QOI
+- [rtexpacker](https://raylibtech.itch.io/rtexpacker) - texture packer, supports QOI
+- [DmitriySalnikov/godot_qoi](https://github.com/DmitriySalnikov/godot_qoi) - QOI GDNative Addon for Godot Engine
+- [dan9er/farbfeld-convert-qoi](https://gitlab.com/dan9er/farbfeld-convert-qoi) - QOI <=> farbfeld converter
+- [Ben1138/unity-qo](https://github.com/Ben1138/unity-qoi) - QOI support for the Unity3D Game Engine
+- [xiaozhuai/jetbrains-qo](https://github.com/xiaozhuai/jetbrains-qoi) - [QOI Support](https://plugins.jetbrains.com/plugin/19352-qoi-support) for Jetbrains' IDE.
 
 
 ## Implementations & Bindings of QOI
 
-- https://github.com/pfusik/qoi-ci (Ć, transpiled to C, C++, C#, Java, JavaScript, Python and Swift)
-- https://github.com/kodonnell/qoi (Python)
-- https://github.com/JaffaKetchup/dqoi (Dart, with Flutter support)
-- https://github.com/Cr4xy/lua-qoi (Lua)
-- https://github.com/superzazu/SDL_QOI (C, SDL2 bindings)
-- https://github.com/saharNooby/qoi-java (Java)
-- https://github.com/MasterQ32/zig-qoi (Zig)
-- https://github.com/rbino/qoix (Elixir)
-- https://github.com/NUlliiON/QoiSharp (C#)
-- https://github.com/aldanor/qoi-rust (Rust)
-- https://github.com/zakarumych/rapid-qoi (Rust)
-- https://github.com/takeyourhatoff/qoi (Go)
-- https://github.com/DosWorld/pasqoi (Pascal)
-- https://github.com/elihwyma/Swift-QOI (Swift)
-- https://github.com/xfmoulet/qoi (Go)
-- https://erratique.ch/software/qoic (OCaml)
-- https://github.com/arian/go-qoi (Go)
-- https://github.com/kchapelier/qoijs (JavaScript)
-- https://github.com/KristofferC/QOI.jl (Julia)
-- https://github.com/shadowMitia/libqoi/ (C++)
-- https://github.com/MKCG/php-qoi (PHP)
-- https://github.com/LightHouseSoftware/qoiformats (D)
-- https://github.com/mhoward540/qoi-nim (Nim)
-- https://github.com/wx257osn2/qoixx (C++)
-- https://github.com/Tiefseetauchner/lr-paint (Processing)
-- https://github.com/amstan/qoi-fpga (FPGA: verilog)
-- https://github.com/musabkilic/qoi-decoder (Python)
-- https://github.com/mathpn/py-qoi (Python)
-- https://github.com/JohannesFriedrich/qoi4R (R)
-- https://github.com/shraiwi/mini-qoi (C, streaming decoder)
-- https://github.com/10maurycy10/libqoi/ (Rust)
-- https://github.com/0xd34df00d/hsqoi (Haskell)
-- https://github.com/418Coffee/qoi-v (V)
-- https://github.com/Imagine-Programming/QoiImagePlugin (PureBasic)
-- https://github.com/Fabien-Chouteau/qoi-spark (Ada/SPARK formally proven)
-- https://github.com/mzgreen/qoi-kotlin (Kotlin Multiplatform)
-- https://github.com/Aftersol/Simplified-QOI-Codec (C99, streaming encoder and decoder, freestanding)
-- https://github.com/AuburnSounds/gamut (D)
+- [pfusik/qoi-ci](https://github.com/pfusik/qoi-ci) - Ć, transpiled to C, C++, C#, Java, JavaScript, Python and Swift
+- [kodonnell/qoi](https://github.com/kodonnell/qoi) - Python
+- [JaffaKetchup/dqoi](https://github.com/JaffaKetchup/dqoi) - Dart, with Flutter support
+- [Cr4xy/lua-qoi](https://github.com/Cr4xy/lua-qoi) - Lua
+- [superzazu/SDL_QOI](https://github.com/superzazu/SDL_QOI) - C, SDL2 bindings
+- [saharNooby/qoi-java](https://github.com/saharNooby/qoi-java) - Java
+- [MasterQ32/zig-qoi](https://github.com/MasterQ32/zig-qoi) - Zig
+- [rbino/qoix](https://github.com/rbino/qoix) - Elixir
+- [NUlliiON/QoiSharp](https://github.com/NUlliiON/QoiSharp) - C#
+- [aldanor/qoi-rust](https://github.com/aldanor/qoi-rust) - Rust
+- [zakarumych/rapid-qoi](https://github.com/zakarumych/rapid-qoi) - Rust
+- [takeyourhatoff/qoi](https://github.com/takeyourhatoff/qoi) - Go
+- [DosWorld/pasqoi](https://github.com/DosWorld/pasqoi) - Pascal
+- [elihwyma/Swift-QOI](https://github.com/elihwyma/Swift-QOI) - Swift
+- [xfmoulet/qoi](https://github.com/xfmoulet/qoi) - Go
+- [erratique.ch/qoic](https://erratique.ch/software/qoic) - OCaml
+- [arian/go-qoi](https://github.com/arian/go-qoi) - Go
+- [kchapelier/qoijs](https://github.com/kchapelier/qoijs) - JavaScript
+- [KristofferC/QOI.jl](https://github.com/KristofferC/QOI.jl) - Julia
+- [shadowMitia/libqoi](https://github.com/shadowMitia/libqoi) - C++
+- [MKCG/php-qoi](https://github.com/MKCG/php-qoi) - PHP
+- [LightHouseSoftware/qoiformats](https://github.com/LightHouseSoftware/qoiformats) - D
+- [mhoward540/qoi-nim](https://github.com/mhoward540/qoi-nim) - Nim
+- [wx257osn2/qoixx](https://github.com/wx257osn2/qoixx) - C++
+- [Tiefseetauchner/lr-paint](https://github.com/Tiefseetauchner/lr-paint) - Processing
+- [amstan/qoi-fpga](https://github.com/amstan/qoi-fpga) - FPGA: verilog
+- [musabkilic/qoi-decoder](https://github.com/musabkilic/qoi-decoder) - Python
+- [mathpn/py-qoi](https://github.com/mathpn/py-qoi) - Python
+- [JohannesFriedrich/qoi4R](https://github.com/JohannesFriedrich/qoi4R) - R
+- [shraiwi/mini-qoi](https://github.com/shraiwi/mini-qoi) - C, streaming decoder
+- [10maurycy10/libqoi/](https://github.com/10maurycy10/libqoi/) - Rust
+- [0xd34df00d/hsqoi](https://github.com/0xd34df00d/hsqoi) - Haskell
+- [418Coffee/qoi-v](https://github.com/418Coffee/qoi-v) - V
+- [Imagine-Programming/QoiImagePlugin](https://github.com/Imagine-Programming/QoiImagePlugin) - PureBasic
+- [Fabien-Chouteau/qoi-spark](https://github.com/Fabien-Chouteau/qoi-spark) - Ada/SPARK formally proven
+- [mzgreen/qoi-kotlin](https://github.com/mzgreen/qoi-kotlin) - Kotlin Multiplatform
+- [Aftersol/Simplified-QOI-Codec](https://github.com/Aftersol/Simplified-QOI-Codec) - C99, streaming encoder and decoder, freestanding
+- [AuburnSounds/gamut](https://github.com/AuburnSounds/gamut) - D
 
 ## QOI Support in Other Software
 
-- [Amiga OS QOI datatype](https://github.com/dgaw/qoi-datatype) adds support for decoding QOI images to the Amiga operating system.
-- [SerenityOS](https://github.com/SerenityOS/serenity) supports decoding QOI system wide through a custom [cpp implementation in LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/QOILoader.h)
-- [Raylib](https://github.com/raysan5/raylib) supports decoding and encoding QOI textures through its [rtextures module](https://github.com/raysan5/raylib/blob/master/src/rtextures.c)
-- [Rebol3](https://github.com/Oldes/Rebol3/issues/39) supports decoding and encoding QOI using a native codec
-- [c-ray](https://github.com/vkoskiv/c-ray) supports QOI natively
-- [SAIL](https://sail.software) image decoding library, supports decoding and encoding QOI images
-- [Orx](https://github.com/orx/orx) 2D game engine, supports QOI natively
-- [IrfanView](https://www.irfanview.com) supports decoding and encoding QOI through its Formats plugin
-- [ImageMagick](https://github.com/ImageMagick/ImageMagick) supports decoding and encoding QOI, since 7.1.0-20
-- [barebox](https://barebox.org) bootloader, supports decoding QOI images for splash logo, since v2022.03.0
-- [KorGE](https://korge.org) & KorIM Kotlin 2D game engine and imaging library, supports decoding and encoding QOI natively since 2.7.0
-- [DOjS](https://github.com/SuperIlu/DOjS) DOS JavaScript Canvas implementation supports loading QOI files
-- [XnView MP](https://www.xnview.com/en/xnviewmp/) supports decoding QOI since 1.00
+- [Amiga OS QOI datatype](https://github.com/dgaw/qoi-datatype) - adds support for decoding QOI images to the Amiga operating system.
+- [SerenityOS](https://github.com/SerenityOS/serenity) - supports decoding QOI system wide through a custom [cpp implementation in LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/QOILoader.h)
+- [Raylib](https://github.com/raysan5/raylib) - supports decoding and encoding QOI textures through its [rtextures module](https://github.com/raysan5/raylib/blob/master/src/rtextures.c)
+- [Rebol3](https://github.com/Oldes/Rebol3/issues/39) - supports decoding and encoding QOI using a native codec
+- [c-ray](https://github.com/vkoskiv/c-ray) - supports QOI natively
+- [SAIL](https://sail.software) - image decoding library, supports decoding and encoding QOI images
+- [Orx](https://github.com/orx/orx) - 2D game engine, supports QOI natively
+- [IrfanView](https://www.irfanview.com) - supports decoding and encoding QOI through its Formats plugin
+- [ImageMagick](https://github.com/ImageMagick/ImageMagick) - supports decoding and encoding QOI, since 7.1.0-20
+- [barebox](https://barebox.org) - bootloader, supports decoding QOI images for splash logo, since v2022.03.0
+- [KorGE](https://korge.org) - & KorIM Kotlin 2D game engine and imaging library, supports decoding and encoding QOI natively since 2.7.0
+- [DOjS](https://github.com/SuperIlu/DOjS) - DOS JavaScript Canvas implementation supports loading QOI files
+- [XnView MP](https://www.xnview.com/en/xnviewmp/) - supports decoding QOI since 1.00
 
 ## Packages
 
