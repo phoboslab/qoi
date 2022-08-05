@@ -30,9 +30,9 @@ a simple wrapper to benchmark stbi, libpng and qoi
 The recommended MIME type for QOI images is `image/qoi`. While QOI is not yet
 officially registered with IANA, I believe QOI has found enough adoption to
 prevent any future image format from choosing the same name, thus making a 
-MIME type collision highly unlikely ([see #167](https://github.com/phoboslab/qoi/issues/167))
+MIME type collision highly unlikely ([see #167](https://github.com/phoboslab/qoi/issues/167)).
 
-Recommended file extension for QOI images is `.qoi`
+The recommended file extension for QOI images is `.qoi`
 
 
 ## Limitations
