@@ -25,6 +25,16 @@ converts between png <> qoi
 a simple wrapper to benchmark stbi, libpng and qoi
 
 
+## MIME Type, File Extension
+
+The recommended MIME type for QOI images is `image/qoi`. While QOI is not yet
+officially registered with IANA, I believe QOI has found enough adoption to
+prevent any future image format from choosing the same name, thus making a 
+MIME type collision highly unlikely ([see #167](https://github.com/phoboslab/qoi/issues/167))
+
+Recommended file extension for QOI images is `.qoi`
+
+
 ## Limitations
 
 The QOI file format allows for huge images with up to 18 exa-pixels. A streaming 
