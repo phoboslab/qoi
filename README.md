@@ -146,11 +146,3 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Ubuntu](https://launchpad.net/ubuntu/+source/qoi) - packages for binaries and qoi.h
 
 Packages for other systems [tracked at Repology](https://repology.org/project/qoi/versions).
-
-
-## Implementations not yet conforming to the final specification
-
-These implementations are based on the pre-release version of QOI. Resulting files are not compatible with the current version.
-
-- https://github.com/ChevyRay/qoi_rs (Rust)
-- https://github.com/panzi/jsqoi (TypeScript)
