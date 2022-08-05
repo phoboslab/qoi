@@ -127,6 +127,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [AuburnSounds/gamut](https://github.com/AuburnSounds/gamut) - D
 - [AngusJohnson/TQoiImage](https://github.com/AngusJohnson/TQoiImage) - Delphi
 - [MarkJeronimus/qoi-java-spi](https://github.com/MarkJeronimus/qoi-java-spi) - Java SPI
+- [aumouvantsillage/qoi-racket](https://github.com/aumouvantsillage/qoi-racket) - Racket
 
 ## QOI Support in Other Software
 
