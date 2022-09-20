@@ -83,7 +83,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [serge-ivamov/QOIql](https://github.com/serge-ivamov/QOIql) - MacOS QuickLook plugin for QOI
 - [tobozo/kde-thumbnailer-qoi](https://github.com/tobozo/kde-thumbnailer-qoi) - QOI Thumbnailer for KDE
 - [walksanatora/qoi-thumbnailer-nemo](https://github.com/walksanatora/qoi-thumbnailer-nemo) - QOI Thumbnailer for Nemo
-
+- [hzeller/timg](https://github.com/hzeller/timg) - a terminal image viewer with QOI support
 
 ## Implementations & Bindings of QOI
 
