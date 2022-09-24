@@ -131,6 +131,8 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [AngusJohnson/TQoiImage](https://github.com/AngusJohnson/TQoiImage) - Delphi
 - [MarkJeronimus/qoi-java-spi](https://github.com/MarkJeronimus/qoi-java-spi) - Java SPI
 - [aumouvantsillage/qoi-racket](https://github.com/aumouvantsillage/qoi-racket) - Racket
+- [rubikscraft/qoi-stream](https://github.com/rubikscraft/qoi-stream) - C99, one byte at a time streaming encoder and decoder
+- [rubikscraft/qoi-img](https://github.com/rubikscraft/qoi-img) - NodeJS typescript, bindings to both [QOIxx](https://github.com/wx257osn2/qoixx) and [qoi-stream](https://github.com/rubikscraft/qoi-stream)
 
 ## QOI Support in Other Software
 
