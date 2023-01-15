@@ -249,7 +249,7 @@ number of channels (3 = RGB, 4 = RGBA) and the colorspace.
 The function returns 0 on failure (invalid parameters, or fopen or malloc
 failed) or the number of bytes written on success. */
 
-int qoi_write(const char *filename, const void *data, const qoi_desc *desc);
+int qoi_write(const char *restrict filename, const void *restrict data, const qoi_desc *restrict desc);
 
 
 /* Read and decode a QOI image from the file system. If channels is 0, the
@@ -262,7 +262,7 @@ will be filled with the description from the file header.
 
 The returned pixel data should be free()d after use. */
 
-void *qoi_read(const char *filename, qoi_desc *desc, int channels);
+void *qoi_read(const char *restrict filename, qoi_desc *restrict desc, int channels);
 
 #endif /* QOI_NO_STDIO */
 
@@ -275,7 +275,7 @@ is set to the size in bytes of the encoded data.
 
 The returned qoi data should be free()d after use. */
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
+void *qoi_encode(const void *restrict data, const qoi_desc *restrict desc, int *restrict out_len);
 
 
 /* Decode a QOI image from memory.
@@ -286,7 +286,7 @@ is filled with the description from the file header.
 
 The returned pixel data should be free()d after use. */
 
-void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
+void *qoi_decode(const void *restrict data, int size, qoi_desc *restrict desc, int channels);
 
 
 #ifdef __cplusplus
@@ -353,7 +353,7 @@ static unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
 	return a << 24 | b << 16 | c << 8 | d;
 }
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
+void *qoi_encode(const void *restrict data, const qoi_desc *restrict desc, int *restrict out_len) {
 	int i, max_size, p, run;
 	int px_len, px_end, px_pos, channels;
 	unsigned char *bytes;
@@ -485,7 +485,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	return bytes;
 }
 
-void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
+void *qoi_decode(const void *restrict data, int size, qoi_desc *restrict desc, int channels) {
 	const unsigned char *bytes;
 	unsigned int header_magic;
 	unsigned char *pixels;
@@ -603,7 +603,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 #ifndef QOI_NO_STDIO
 #include <stdio.h>
 
-int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
+int qoi_write(const char *restrict filename, const void *restrict data, const qoi_desc *restrict desc) {
 	FILE *f = fopen(filename, "wb");
 	int size;
 	void *encoded;
