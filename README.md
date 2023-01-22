@@ -87,6 +87,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [LuisAlfredo92/Super-QOI-converter](https://github.com/LuisAlfredo92/Super-QOI-converter "LuisAlfredo92/Super-QOI-converter") - A program to convert JPG, JPEG, BMP, and PNG to QOI
 	- [Console version](https://github.com/LuisAlfredo92/Super-QOI-converter-Console- "Console version"): Available for Linux, OSX and Windows
 	- [GUI version](https://github.com/LuisAlfredo92/Super-QOI-converter-GUI- "GUI version"): Available only for windows
+- [tacent view](https://github.com/bluescan/tacentview) - Image and texture viewer, supports QOI
 
 ## Implementations & Bindings of QOI
 
