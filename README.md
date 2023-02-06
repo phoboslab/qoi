@@ -152,6 +152,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [KorGE](https://korge.org) - & KorIM Kotlin 2D game engine and imaging library, supports decoding and encoding QOI natively since 2.7.0
 - [DOjS](https://github.com/SuperIlu/DOjS) - DOS JavaScript Canvas implementation supports loading QOI files
 - [XnView MP](https://www.xnview.com/en/xnviewmp/) - supports decoding QOI since 1.00
+- [ffmpeg](https://ffmpeg.org/) - supports decoding and encoding QOI since 5.1
 
 ## Packages
 
