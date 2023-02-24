@@ -78,7 +78,8 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [rtexpacker](https://raylibtech.itch.io/rtexpacker) - texture packer, supports QOI
 - [DmitriySalnikov/godot_qoi](https://github.com/DmitriySalnikov/godot_qoi) - QOI GDNative Addon for Godot Engine
 - [dan9er/farbfeld-convert-qoi](https://gitlab.com/dan9er/farbfeld-convert-qoi) - QOI <=> farbfeld converter
-- [Ben1138/unity-qo](https://github.com/Ben1138/unity-qoi) - QOI support for the Unity3D Game Engine
+- [LTMX/Unity.QOI](https://github.com/LTMX/Unity.QOI) - QOI Importer and Exporter for the Unity3D Game Engine
+- [Ben1138/unity-qoi](https://github.com/Ben1138/unity-qoi) - QOI Importer(only) support for the Unity3D Game Engine
 - [xiaozhuai/jetbrains-qo](https://github.com/xiaozhuai/jetbrains-qoi) - [QOI Support](https://plugins.jetbrains.com/plugin/19352-qoi-support) for Jetbrains' IDE.
 - [serge-ivamov/QOIql](https://github.com/serge-ivamov/QOIql) - MacOS QuickLook plugin for QOI
 - [tobozo/kde-thumbnailer-qoi](https://github.com/tobozo/kde-thumbnailer-qoi) - QOI Thumbnailer for KDE
