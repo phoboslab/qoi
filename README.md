@@ -154,6 +154,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [DOjS](https://github.com/SuperIlu/DOjS) - DOS JavaScript Canvas implementation supports loading QOI files
 - [XnView MP](https://www.xnview.com/en/xnviewmp/) - supports decoding QOI since 1.00
 - [ffmpeg](https://ffmpeg.org/) - supports decoding and encoding QOI since 5.1
+- [JPEGView](https://github.com/sylikc/jpegview) - lightweight Windows image viewer, supports decoding and encoding of QOI natively, since 1.1.44
 
 ## Packages
 
