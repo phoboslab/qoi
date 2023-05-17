@@ -128,7 +128,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Imagine-Programming/QoiImagePlugin](https://github.com/Imagine-Programming/QoiImagePlugin) - PureBasic
 - [Fabien-Chouteau/qoi-spark](https://github.com/Fabien-Chouteau/qoi-spark) - Ada/SPARK formally proven
 - [mzgreen/qoi-kotlin](https://github.com/mzgreen/qoi-kotlin) - Kotlin Multiplatform
-- [Aftersol/Simplified-QOI-Codec](https://github.com/Aftersol/Simplified-QOI-Codec) - C99, streaming encoder and decoder, freestanding
+- [Aftersol/Simplified-QOI-Codec](https://github.com/Aftersol/Simplified-QOI-Codec) - C99, encoder and decoder, freestanding
 - [AuburnSounds/gamut](https://github.com/AuburnSounds/gamut) - D
 - [AngusJohnson/TQoiImage](https://github.com/AngusJohnson/TQoiImage) - Delphi
 - [MarkJeronimus/qoi-java-spi](https://github.com/MarkJeronimus/qoi-java-spi) - Java SPI
