@@ -137,6 +137,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [rubikscraft/qoi-img](https://github.com/rubikscraft/qoi-img) - NodeJS typescript, bindings to both [QOIxx](https://github.com/wx257osn2/qoixx) and [qoi-stream](https://github.com/rubikscraft/qoi-stream)
 - [grego/hare-qoi](https://git.sr.ht/~grego/hare-qoi) - Hare
 - [MrNocole/ZTQOI](https://github.com/MrNocole/ZTQOI) - Objective-C
+- [bpanthi977/qoi](https://github.com/bpanthi977/qoi) - Common Lisp
 
 ## QOI Support in Other Software
 
