@@ -99,11 +99,11 @@ static uint64_t ns() {
 
 typedef struct {
 	int size;
-	int capacity;
+	png_size_t capacity;
 	unsigned char *data;
 } libpng_write_t;
 
-void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
+static void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
 	libpng_write_t *write_data = (libpng_write_t*)png_get_io_ptr(png_ptr);
 	if (write_data->size + length >= write_data->capacity) {
 		ERROR("PNG write");
@@ -112,7 +112,7 @@ void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t leng
 	write_data->size += length;
 }
 
-void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
+static void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) {
 		ERROR("png_create_write_struct");
@@ -163,24 +163,26 @@ void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 
 typedef struct {
 	int pos;
-	int size;
+	png_size_t size;
 	unsigned char *data;
 } libpng_read_t;
 
-void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
+static void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	libpng_read_t *read_data = (libpng_read_t*)png_get_io_ptr(png);
 	if (read_data->pos + length > read_data->size) {
-		ERROR("PNG read %ld bytes at pos %d (size: %d)", length, read_data->pos, read_data->size);
+		ERROR("PNG read %zu bytes at pos %d (size: %zu)", length, read_data->pos, read_data->size);
 	}
 	memcpy(data, read_data->data + read_data->pos, length);
 	read_data->pos += length;
 }
 
-void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
+static void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
 	// Ignore warnings about sRGB profiles and such.
+	(void)png_ptr;
+	(void)warning_msg;
 }
 
-void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
+static void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, png_warning_callback);
 	if (!png) {
 		ERROR("png_create_read_struct");
@@ -196,18 +198,18 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 		.size = size,
 		.data = data
 	};
-	
+
 	png_set_read_fn(png, &read_data, png_decode_callback);
 	png_set_sig_bytes(png, 0);
 	png_read_info(png, info);
-	
+
 	png_uint_32 w, h;
 	int bitDepth, colorType, interlaceType;
 	png_get_IHDR(png, info, &w, &h, &bitDepth, &colorType, &interlaceType, NULL, NULL);
-	
+
 	// 16 bit -> 8 bit
 	png_set_strip_16(png);
-	
+
 	// 1, 2, 4 bit -> 8 bit
 	if (bitDepth < 8) {
 		png_set_packing(png);
@@ -216,7 +218,7 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	if (colorType & PNG_COLOR_MASK_PALETTE) {
 		png_set_expand(png);
 	}
-	
+
 	if (!(colorType & PNG_COLOR_MASK_COLOR)) {
 		png_set_gray_to_rgb(png);
 	}
@@ -225,28 +227,28 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 	if (png_get_valid(png, info, PNG_INFO_tRNS)) {
 		png_set_tRNS_to_alpha(png);
 	}
-	
+
 	// make sure every pixel has an alpha value
 	if (!(colorType & PNG_COLOR_MASK_ALPHA)) {
 		png_set_filler(png, 255, PNG_FILLER_AFTER);
 	}
-	
+
 	png_read_update_info(png, info);
 
 	unsigned char* out = malloc(w * h * 4);
 	*out_w = w;
 	*out_h = h;
-	
+
 	// png_uint_32 rowBytes = png_get_rowbytes(png, info);
 	png_bytep row_pointers[h];
 	for (png_uint_32 row = 0; row < h; row++ ) {
 		row_pointers[row] = (png_bytep)(out + (row * w * 4));
 	}
-	
+
 	png_read_image(png, row_pointers);
 	png_read_end(png, info);
 	png_destroy_read_struct( &png, &info, NULL);
-	
+
 	return out;
 }
 
@@ -254,7 +256,8 @@ void *libpng_decode(void *data, int size, int *out_w, int *out_h) {
 // -----------------------------------------------------------------------------
 // stb_image encode callback
 
-void stbi_write_callback(void *context, void *data, int size) {
+static void stbi_write_callback(void *context, void *data, int size) {
+	(void)data;
 	int *encoded_size = (int *)context;
 	*encoded_size += size;
 	// In theory we'd need to do another malloc(), memcpy() and free() here to 
@@ -265,7 +268,7 @@ void stbi_write_callback(void *context, void *data, int size) {
 // -----------------------------------------------------------------------------
 // function to load a whole file into memory
 
-void *fload(const char *path, int *out_size) {
+static void *fload(const char *path, int *out_size) {
 	FILE *fh = fopen(path, "rb");
 	if (!fh) {
 		ERROR("Can't open file");
@@ -294,14 +297,14 @@ void *fload(const char *path, int *out_size) {
 // benchmark runner
 
 
-int opt_runs = 1;
-int opt_nopng = 0;
-int opt_nowarmup = 0;
-int opt_noverify = 0;
-int opt_nodecode = 0;
-int opt_noencode = 0;
-int opt_norecurse = 0;
-int opt_onlytotals = 0;
+static int opt_runs = 1;
+static int opt_nopng = 0;
+static int opt_nowarmup = 0;
+static int opt_noverify = 0;
+static int opt_nodecode = 0;
+static int opt_noencode = 0;
+static int opt_norecurse = 0;
+static int opt_onlytotals = 0;
 
 
 typedef struct {
@@ -322,7 +325,7 @@ typedef struct {
 } benchmark_result_t;
 
 
-void benchmark_print_result(benchmark_result_t res) {
+static void benchmark_print_result(benchmark_result_t res) {
 	res.px /= res.count;
 	res.raw_size /= res.count;
 	res.libpng.encode_time /= res.count;
@@ -339,16 +342,16 @@ void benchmark_print_result(benchmark_result_t res) {
 	printf("        decode ms   encode ms   decode mpps   encode mpps   size kb    rate\n");
 	if (!opt_nopng) {
 		printf(
-			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
-			(double)res.libpng.decode_time/1000000.0, 
-			(double)res.libpng.encode_time/1000000.0, 
+			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8zu   %4.1f%%\n",
+			(double)res.libpng.decode_time/1000000.0,
+			(double)res.libpng.encode_time/1000000.0,
 			(res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time/1000.0) : 0),
 			(res.libpng.encode_time > 0 ? px / ((double)res.libpng.encode_time/1000.0) : 0),
 			res.libpng.size/1024,
 			((double)res.libpng.size/(double)res.raw_size) * 100.0
 		);
 		printf(
-			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
+			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8zu   %4.1f%%\n",
 			(double)res.stbi.decode_time/1000000.0,
 			(double)res.stbi.encode_time/1000000.0,
 			(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
@@ -358,7 +361,7 @@ void benchmark_print_result(benchmark_result_t res) {
 		);
 	}
 	printf(
-		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
+		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8zu   %4.1f%%\n",
 		(double)res.qoi.decode_time/1000000.0,
 		(double)res.qoi.encode_time/1000000.0,
 		(res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time/1000.0) : 0),
@@ -386,7 +389,7 @@ void benchmark_print_result(benchmark_result_t res) {
 	} while (0)
 
 
-benchmark_result_t benchmark_image(const char *path) {
+static benchmark_result_t benchmark_image(const char *path) {
 	int encoded_png_size;
 	int encoded_qoi_size;
 	int w;
@@ -406,7 +409,7 @@ benchmark_result_t benchmark_image(const char *path) {
 	void *encoded_png = fload(path, &encoded_png_size);
 	void *encoded_qoi = qoi_encode(pixels, &(qoi_desc){
 			.width = w,
-			.height = h, 
+			.height = h,
 			.channels = channels,
 			.colorspace = QOI_SRGB
 		}, &encoded_qoi_size);
@@ -449,7 +452,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			BENCHMARK_FN(opt_nowarmup, opt_runs, res.stbi.decode_time, {
 				int dec_w, dec_h, dec_channels;
 				void *dec_p = stbi_load_from_memory(encoded_png, encoded_png_size, &dec_w, &dec_h, &dec_channels, 4);
-				free(dec_p);
+				stbi_image_free(dec_p);
 			});
 		}
 
@@ -482,7 +485,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			int enc_size;
 			void *enc_p = qoi_encode(pixels, &(qoi_desc){
 				.width = w,
-				.height = h, 
+				.height = h,
 				.channels = channels,
 				.colorspace = QOI_SRGB
 			}, &enc_size);
@@ -491,14 +494,14 @@ benchmark_result_t benchmark_image(const char *path) {
 		});
 	}
 
-	free(pixels);
+	stbi_image_free(pixels);
 	free(encoded_png);
 	free(encoded_qoi);
 
 	return res;
 }
 
-void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
+static void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 	DIR *dir = opendir(path);
 	if (!dir) {
 		ERROR("Couldn't open directory %s", path);
@@ -522,7 +525,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 	}
 
 	benchmark_result_t dir_total = {0};
-	
+
 	int has_shown_head = 0;
 	for (int i = 0; (file = readdir(dir)) != NULL; i++) {
 		if (strcmp(file->d_name + strlen(file->d_name) - 4, ".png") != 0) {
@@ -536,7 +539,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 
 		char *file_path = malloc(strlen(file->d_name) + strlen(path)+8);
 		sprintf(file_path, "%s/%s", path, file->d_name);
-		
+
 		benchmark_result_t res = benchmark_image(file_path);
 
 		if (!opt_onlytotals) {
@@ -545,7 +548,7 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 		}
 
 		free(file_path);
-		
+
 		dir_total.count++;
 		dir_total.raw_size += res.raw_size;
 		dir_total.px += res.px;

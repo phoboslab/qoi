@@ -75,7 +75,7 @@ int main(int argc, char **argv) {
 	else if (STR_ENDS_WITH(argv[2], ".qoi")) {
 		encoded = qoi_write(argv[2], pixels, &(qoi_desc){
 			.width = w,
-			.height = h, 
+			.height = h,
 			.channels = channels,
 			.colorspace = QOI_SRGB
 		});
