@@ -627,11 +627,10 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 
 	fseek(f, 0, SEEK_END);
 	size = ftell(f);
-	if (size <= 0) {
+	if (size <= 0 || fseek(f, 0, SEEK_SET) != 0) {
 		fclose(f);
 		return NULL;
 	}
-	fseek(f, 0, SEEK_SET);
 
 	data = QOI_MALLOC(size);
 	if (!data) {
@@ -641,8 +640,7 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 
 	bytes_read = fread(data, 1, size, f);
 	fclose(f);
-
-	pixels = qoi_decode(data, bytes_read, desc, channels);
+	pixels = (bytes_read != size) ? NULL : qoi_decode(data, bytes_read, desc, channels);
 	QOI_FREE(data);
 	return pixels;
 }
