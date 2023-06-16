@@ -303,6 +303,18 @@ int opt_noencode = 0;
 int opt_norecurse = 0;
 int opt_onlytotals = 0;
 
+enum {
+	LIBPNG,
+	STBI,
+	QOI,
+	BENCH_COUNT /* must be the last element */
+};
+static const char *const lib_names[BENCH_COUNT] = {
+	// NOTE: pad with spaces so everything lines up properly
+	[LIBPNG] =  "libpng: ",
+	[STBI]   =  "stbi:   ",
+	[QOI]    =  "qoi:    ",
+};
 
 typedef struct {
 	uint64_t size;
@@ -316,56 +328,34 @@ typedef struct {
 	uint64_t px;
 	int w;
 	int h;
-	benchmark_lib_result_t libpng;
-	benchmark_lib_result_t stbi;
-	benchmark_lib_result_t qoi;
+	benchmark_lib_result_t libs[BENCH_COUNT];
 } benchmark_result_t;
 
 
 void benchmark_print_result(benchmark_result_t res) {
 	res.px /= res.count;
 	res.raw_size /= res.count;
-	res.libpng.encode_time /= res.count;
-	res.libpng.decode_time /= res.count;
-	res.libpng.size /= res.count;
-	res.stbi.encode_time /= res.count;
-	res.stbi.decode_time /= res.count;
-	res.stbi.size /= res.count;
-	res.qoi.encode_time /= res.count;
-	res.qoi.decode_time /= res.count;
-	res.qoi.size /= res.count;
 
 	double px = res.px;
-	printf("        decode ms   encode ms   decode mpps   encode mpps   size kb    rate\n");
-	if (!opt_nopng) {
+	printf("          decode ms   encode ms   decode mpps   encode mpps   size kb    rate\n");
+	for (int i = 0; i < BENCH_COUNT; ++i) {
+		if (opt_nopng && (i == LIBPNG || i == STBI)) {
+			continue;
+		}
+		res.libs[i].encode_time /= res.count;
+		res.libs[i].decode_time /= res.count;
+		res.libs[i].size /= res.count;
 		printf(
-			"libpng:  %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
-			(double)res.libpng.decode_time/1000000.0, 
-			(double)res.libpng.encode_time/1000000.0, 
-			(res.libpng.decode_time > 0 ? px / ((double)res.libpng.decode_time/1000.0) : 0),
-			(res.libpng.encode_time > 0 ? px / ((double)res.libpng.encode_time/1000.0) : 0),
-			res.libpng.size/1024,
-			((double)res.libpng.size/(double)res.raw_size) * 100.0
-		);
-		printf(
-			"stbi:    %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
-			(double)res.stbi.decode_time/1000000.0,
-			(double)res.stbi.encode_time/1000000.0,
-			(res.stbi.decode_time > 0 ? px / ((double)res.stbi.decode_time/1000.0) : 0),
-			(res.stbi.encode_time > 0 ? px / ((double)res.stbi.encode_time/1000.0) : 0),
-			res.stbi.size/1024,
-			((double)res.stbi.size/(double)res.raw_size) * 100.0
+			"%s   %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n",
+			lib_names[i],
+			(double)res.libs[i].decode_time/1000000.0,
+			(double)res.libs[i].encode_time/1000000.0,
+			(res.libs[i].decode_time > 0 ? px / ((double)res.libs[i].decode_time/1000.0) : 0),
+			(res.libs[i].encode_time > 0 ? px / ((double)res.libs[i].encode_time/1000.0) : 0),
+			res.libs[i].size/1024,
+			((double)res.libs[i].size/(double)res.raw_size) * 100.0
 		);
 	}
-	printf(
-		"qoi:     %8.1f    %8.1f      %8.2f      %8.2f  %8ld   %4.1f%%\n", 
-		(double)res.qoi.decode_time/1000000.0,
-		(double)res.qoi.encode_time/1000000.0,
-		(res.qoi.decode_time > 0 ? px / ((double)res.qoi.decode_time/1000.0) : 0),
-		(res.qoi.encode_time > 0 ? px / ((double)res.qoi.encode_time/1000.0) : 0),
-		res.qoi.size/1024,
-		((double)res.qoi.size/(double)res.raw_size) * 100.0
-	);
 	printf("\n");
 }
 
@@ -440,20 +430,20 @@ benchmark_result_t benchmark_image(const char *path) {
 
 	if (!opt_nodecode) {
 		if (!opt_nopng) {
-			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libpng.decode_time, {
+			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libs[LIBPNG].decode_time, {
 				int dec_w, dec_h;
 				void *dec_p = libpng_decode(encoded_png, encoded_png_size, &dec_w, &dec_h);
 				free(dec_p);
 			});
 
-			BENCHMARK_FN(opt_nowarmup, opt_runs, res.stbi.decode_time, {
+			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libs[STBI].decode_time, {
 				int dec_w, dec_h, dec_channels;
 				void *dec_p = stbi_load_from_memory(encoded_png, encoded_png_size, &dec_w, &dec_h, &dec_channels, 4);
 				free(dec_p);
 			});
 		}
 
-		BENCHMARK_FN(opt_nowarmup, opt_runs, res.qoi.decode_time, {
+		BENCHMARK_FN(opt_nowarmup, opt_runs, res.libs[QOI].decode_time, {
 			qoi_desc desc;
 			void *dec_p = qoi_decode(encoded_qoi, encoded_qoi_size, &desc, 4);
 			free(dec_p);
@@ -464,21 +454,21 @@ benchmark_result_t benchmark_image(const char *path) {
 	// Encoding
 	if (!opt_noencode) {
 		if (!opt_nopng) {
-			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libpng.encode_time, {
+			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libs[LIBPNG].encode_time, {
 				int enc_size;
 				void *enc_p = libpng_encode(pixels, w, h, channels, &enc_size);
-				res.libpng.size = enc_size;
+				res.libs[LIBPNG].size = enc_size;
 				free(enc_p);
 			});
 
-			BENCHMARK_FN(opt_nowarmup, opt_runs, res.stbi.encode_time, {
+			BENCHMARK_FN(opt_nowarmup, opt_runs, res.libs[STBI].encode_time, {
 				int enc_size = 0;
 				stbi_write_png_to_func(stbi_write_callback, &enc_size, w, h, channels, pixels, 0);
-				res.stbi.size = enc_size;
+				res.libs[STBI].size = enc_size;
 			});
 		}
 
-		BENCHMARK_FN(opt_nowarmup, opt_runs, res.qoi.encode_time, {
+		BENCHMARK_FN(opt_nowarmup, opt_runs, res.libs[QOI].encode_time, {
 			int enc_size;
 			void *enc_p = qoi_encode(pixels, &(qoi_desc){
 				.width = w,
@@ -486,7 +476,7 @@ benchmark_result_t benchmark_image(const char *path) {
 				.channels = channels,
 				.colorspace = QOI_SRGB
 			}, &enc_size);
-			res.qoi.size = enc_size;
+			res.libs[QOI].size = enc_size;
 			free(enc_p);
 		});
 	}
@@ -549,28 +539,20 @@ void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 		dir_total.count++;
 		dir_total.raw_size += res.raw_size;
 		dir_total.px += res.px;
-		dir_total.libpng.encode_time += res.libpng.encode_time;
-		dir_total.libpng.decode_time += res.libpng.decode_time;
-		dir_total.libpng.size += res.libpng.size;
-		dir_total.stbi.encode_time += res.stbi.encode_time;
-		dir_total.stbi.decode_time += res.stbi.decode_time;
-		dir_total.stbi.size += res.stbi.size;
-		dir_total.qoi.encode_time += res.qoi.encode_time;
-		dir_total.qoi.decode_time += res.qoi.decode_time;
-		dir_total.qoi.size += res.qoi.size;
+		for (int i = 0; i < BENCH_COUNT; ++i) {
+			dir_total.libs[i].encode_time += res.libs[i].encode_time;
+			dir_total.libs[i].decode_time += res.libs[i].decode_time;
+			dir_total.libs[i].size += res.libs[i].size;
+		}
 
 		grand_total->count++;
 		grand_total->raw_size += res.raw_size;
 		grand_total->px += res.px;
-		grand_total->libpng.encode_time += res.libpng.encode_time;
-		grand_total->libpng.decode_time += res.libpng.decode_time;
-		grand_total->libpng.size += res.libpng.size;
-		grand_total->stbi.encode_time += res.stbi.encode_time;
-		grand_total->stbi.decode_time += res.stbi.decode_time;
-		grand_total->stbi.size += res.stbi.size;
-		grand_total->qoi.encode_time += res.qoi.encode_time;
-		grand_total->qoi.decode_time += res.qoi.decode_time;
-		grand_total->qoi.size += res.qoi.size;
+		for (int i = 0; i < BENCH_COUNT; ++i) {
+			grand_total->libs[i].encode_time += res.libs[i].encode_time;
+			grand_total->libs[i].decode_time += res.libs[i].decode_time;
+			grand_total->libs[i].size += res.libs[i].size;
+		}
 	}
 	closedir(dir);
 
