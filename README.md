@@ -138,6 +138,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [grego/hare-qoi](https://git.sr.ht/~grego/hare-qoi) - Hare
 - [MrNocole/ZTQOI](https://github.com/MrNocole/ZTQOI) - Objective-C
 - [bpanthi977/qoi](https://github.com/bpanthi977/qoi) - Common Lisp
+- [Floessie/pam2qoi](https://github.com/Floessie/pam2qoi) - C++
 
 ## QOI Support in Other Software
 
