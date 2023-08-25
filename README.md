@@ -68,7 +68,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 ## Tools
 
 - [floooh/qoiview](https://github.com/floooh/qoiview) - native QOI viewer
-- [pfusik/qoi-ci](https://github.com/pfusik/qoi-ci/releases) - QOI Plugin installer for Windows Explorer, Finder, GNOME, GIMP, Imagine, Paint.NET and XnView
+- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu/releases) - QOI Plugin installer for Windows Explorer, Finder, GNOME, GIMP, Imagine, Paint.NET and XnView
 - [iOrange/QoiFileTypeNet](https://github.com/iOrange/QoiFileTypeNet/releases) - QOI Plugin for Paint.NET
 - [iOrange/QOIThumbnailProvider](https://github.com/iOrange/QOIThumbnailProvider) - Add thumbnails for QOI images in Windows Explorer
 - [Tom94/tev](https://github.com/Tom94/tev) - another native QOI viewer (allows pixel peeping and comparison with other image formats)
@@ -92,7 +92,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 
 ## Implementations & Bindings of QOI
 
-- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu) - Fusion, transpiling to C, C++, C#, Java, JavaScript, Python, Swift and TypeScript
+- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu) - Fusion, transpiling to C, C++, C#, D, Java, JavaScript, Python, Swift and TypeScript
 - [kodonnell/qoi](https://github.com/kodonnell/qoi) - Python
 - [JaffaKetchup/dqoi](https://github.com/JaffaKetchup/dqoi) - Dart, with Flutter support
 - [Cr4xy/lua-qoi](https://github.com/Cr4xy/lua-qoi) - Lua
