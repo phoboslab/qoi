@@ -140,6 +140,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [bpanthi977/qoi](https://github.com/bpanthi977/qoi) - Common Lisp
 - [Floessie/pam2qoi](https://github.com/Floessie/pam2qoi) - C++
 - [SpeckyYT/spwn-qoi](https://github.com/SpeckyYT/spwn-qoi) - SPWN
+- [n00bmind/qoi.jai](https://github.com/n00bmind/qoi.jai) - Jai
 
 ## QOI Support in Other Software
 
