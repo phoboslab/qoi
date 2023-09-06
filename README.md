@@ -89,6 +89,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 	- [Console version](https://github.com/LuisAlfredo92/Super-QOI-converter-Console- "Console version"): Available for Linux, OSX and Windows
 	- [GUI version](https://github.com/LuisAlfredo92/Super-QOI-converter-GUI- "GUI version"): Available only for windows
 - [tacent view](https://github.com/bluescan/tacentview) - Image and texture viewer, supports QOI
+- [colemanrgb/qoi2spr](https://github.com/colemanrgb/qoi2spr) - A variety of applications for decoding and encoding of QOI images on [RISC OS](https://www.riscosopen.org/)
 
 ## Implementations & Bindings of QOI
 
