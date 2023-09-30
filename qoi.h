@@ -275,7 +275,7 @@ is set to the size in bytes of the encoded data.
 
 The returned qoi data should be free()d after use. */
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, void *dest);
 
 
 /* Decode a QOI image from memory.
@@ -353,7 +353,7 @@ static unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
 	return a << 24 | b << 16 | c << 8 | d;
 }
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, void *dest) {
 	int i, max_size, p, run;
 	int px_len, px_end, px_pos, channels;
 	unsigned char *bytes;
@@ -375,12 +375,17 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 		desc->width * desc->height * (desc->channels + 1) +
 		QOI_HEADER_SIZE + sizeof(qoi_padding);
 
+	int allocate_memory = 0;
+    if (dest == NULL) {
+        allocate_memory = 1;
+        dest = QOI_MALLOC(max_size);
+        if (!dest) {
+            return NULL;
+        }
+    }
+    bytes = (unsigned char *)dest;
+	
 	p = 0;
-	bytes = (unsigned char *) QOI_MALLOC(max_size);
-	if (!bytes) {
-		return NULL;
-	}
-
 	qoi_write_32(bytes, &p, QOI_MAGIC);
 	qoi_write_32(bytes, &p, desc->width);
 	qoi_write_32(bytes, &p, desc->height);
@@ -482,7 +487,11 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	}
 
 	*out_len = p;
-	return bytes;
+	if (allocate_memory) {
+		return bytes;
+	} else {
+		return dest;
+	}
 }
 
 void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
@@ -601,7 +610,7 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
 		return 0;
 	}
 
-	encoded = qoi_encode(data, desc, &size);
+	encoded = qoi_encode(data, desc, &size, NULL);
 	if (!encoded) {
 		fclose(f);
 		return 0;

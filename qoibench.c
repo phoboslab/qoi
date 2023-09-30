@@ -399,7 +399,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			.height = h, 
 			.channels = channels,
 			.colorspace = QOI_SRGB
-		}, &encoded_qoi_size);
+		}, &encoded_qoi_size, NULL);
 
 	if (!pixels || !encoded_qoi || !encoded_png) {
 		ERROR("Error encoding %s", path);
@@ -475,7 +475,7 @@ benchmark_result_t benchmark_image(const char *path) {
 				.height = h, 
 				.channels = channels,
 				.colorspace = QOI_SRGB
-			}, &enc_size);
+			}, &enc_size, NULL);
 			res.libs[QOI].size = enc_size;
 			free(enc_p);
 		});
