@@ -163,6 +163,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [darktable](https://github.com/darktable-org/darktable) - photography workflow application and raw developer, supports decoding since 4.4.0
 - [KDE](https://kde.org) - supports decoding and encoding QOI images. Implemented in [KImageFormats](https://invent.kde.org/frameworks/kimageformats)
 - [EFL](https://www.enlightenment.org) - supports decoding and encoding QOI images since 1.27.
+- [Swingland](https://git.sr.ht/~phlash/swingland) - supports QOI decoding/loading via the `ImageIO` API of this Java Swing reimplemenation for Wayland
 
 ## Packages
 
