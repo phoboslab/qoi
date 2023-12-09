@@ -143,6 +143,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [SpeckyYT/spwn-qoi](https://github.com/SpeckyYT/spwn-qoi) - SPWN
 - [n00bmind/qoi](https://github.com/n00bmind/qoi) - Jai
 - [SixLabors/ImageSharp](https://github.com/SixLabors/ImageSharp) - C# image proccesing library
+- [zertovitch/gid](https://github.com/zertovitch/gid) - Ada
 
 ## QOI Support in Other Software
 
