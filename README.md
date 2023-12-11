@@ -144,6 +144,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [n00bmind/qoi](https://github.com/n00bmind/qoi) - Jai
 - [SixLabors/ImageSharp](https://github.com/SixLabors/ImageSharp) - C# image proccesing library
 - [zertovitch/gid](https://github.com/zertovitch/gid) - Ada
+- [nazrin/lil](https://codeberg.org/nazrin/lil) - Lua image library
 
 ## QOI Support in Other Software
 
