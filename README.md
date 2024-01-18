@@ -168,6 +168,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [EFL](https://www.enlightenment.org) - supports decoding and encoding QOI images since 1.27.
 - [Swingland](https://git.sr.ht/~phlash/swingland) - supports QOI decoding/loading via the `ImageIO` API of this Java Swing reimplemenation for Wayland
 - [Imagine](https://www.nyam.pe.kr/dev/imagine/) - supports decoding and encoding QOI images since 1.3.9
+- [Uiua](https://uiua.org) - supports decoding and encoding QOI images since 0.8.0
 
 ## Packages
 
