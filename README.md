@@ -68,7 +68,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 ## Tools
 
 - [floooh/qoiview](https://github.com/floooh/qoiview) - native QOI viewer
-- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu/releases) - QOI Plugin installer for Windows Explorer, Finder, GNOME, GIMP, Imagine, Paint.NET and XnView
+- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu/releases) - QOI Plugin installer for Windows Explorer, Finder, GNOME, GIMP, Paint.NET and XnView
 - [iOrange/QoiFileTypeNet](https://github.com/iOrange/QoiFileTypeNet/releases) - QOI Plugin for Paint.NET
 - [iOrange/QOIThumbnailProvider](https://github.com/iOrange/QOIThumbnailProvider) - Add thumbnails for QOI images in Windows Explorer
 - [Tom94/tev](https://github.com/Tom94/tev) - another native QOI viewer (allows pixel peeping and comparison with other image formats)
@@ -167,6 +167,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [KDE](https://kde.org) - supports decoding and encoding QOI images. Implemented in [KImageFormats](https://invent.kde.org/frameworks/kimageformats)
 - [EFL](https://www.enlightenment.org) - supports decoding and encoding QOI images since 1.27.
 - [Swingland](https://git.sr.ht/~phlash/swingland) - supports QOI decoding/loading via the `ImageIO` API of this Java Swing reimplemenation for Wayland
+- [Imagine](https://www.nyam.pe.kr/dev/imagine/) - supports decoding and encoding QOI images since 1.3.9
 
 ## Packages
 
