@@ -89,7 +89,7 @@ static uint64_t ns() {
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
-#define ERROR(...) printf("abort at line " TOSTRING(__LINE__) ": " __VA_ARGS__); printf("\n"); exit(1)
+#define QOI_ERR(...) printf("abort at line " TOSTRING(__LINE__) ": " __VA_ARGS__); printf("\n"); exit(1)
 
 
 // -----------------------------------------------------------------------------
@@ -106,7 +106,7 @@ typedef struct {
 void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t length) {
 	libpng_write_t *write_data = (libpng_write_t*)png_get_io_ptr(png_ptr);
 	if (write_data->size + length >= write_data->capacity) {
-		ERROR("PNG write");
+		QOI_ERR("PNG write");
 	}
 	memcpy(write_data->data + write_data->size, data, length);
 	write_data->size += length;
@@ -115,16 +115,16 @@ void libpng_encode_callback(png_structp png_ptr, png_bytep data, png_size_t leng
 void *libpng_encode(void *pixels, int w, int h, int channels, int *out_len) {
 	png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
 	if (!png) {
-		ERROR("png_create_write_struct");
+		QOI_ERR("png_create_write_struct");
 	}
 
 	png_infop info = png_create_info_struct(png);
 	if (!info) {
-		ERROR("png_create_info_struct");
+		QOI_ERR("png_create_info_struct");
 	}
 
 	if (setjmp(png_jmpbuf(png))) {
-		ERROR("png_jmpbuf");
+		QOI_ERR("png_jmpbuf");
 	}
 
 	// Output is 8bit depth, RGBA format.
@@ -170,7 +170,7 @@ typedef struct {
 void png_decode_callback(png_structp png, png_bytep data, png_size_t length) {
 	libpng_read_t *read_data = (libpng_read_t*)png_get_io_ptr(png);
 	if (read_data->pos + length > read_data->size) {
-		ERROR("PNG read %ld bytes at pos %d (size: %d)", length, read_data->pos, read_data->size);
+		QOI_ERR("PNG read %ld bytes at pos %d (size: %d)", length, read_data->pos, read_data->size);
 	}
 	memcpy(data, read_data->data + read_data->pos, length);
 	read_data->pos += length;
@@ -183,12 +183,12 @@ void png_warning_callback(png_structp png_ptr, png_const_charp warning_msg) {
 void *libpng_decode(void *data, int size, int *out_w, int *out_h) {	
 	png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, png_warning_callback);
 	if (!png) {
-		ERROR("png_create_read_struct");
+		QOI_ERR("png_create_read_struct");
 	}
 
 	png_infop info = png_create_info_struct(png);
 	if (!info) {
-		ERROR("png_create_info_struct");
+		QOI_ERR("png_create_info_struct");
 	}
 
 	libpng_read_t read_data = {
@@ -268,7 +268,7 @@ void stbi_write_callback(void *context, void *data, int size) {
 void *fload(const char *path, int *out_size) {
 	FILE *fh = fopen(path, "rb");
 	if (!fh) {
-		ERROR("Can't open file");
+		QOI_ERR("Can't open file");
 	}
 
 	fseek(fh, 0, SEEK_END);
@@ -277,11 +277,11 @@ void *fload(const char *path, int *out_size) {
 
 	void *buffer = malloc(size);
 	if (!buffer) {
-		ERROR("Malloc for %d bytes failed", size);
+		QOI_ERR("Malloc for %d bytes failed", size);
 	}
 
 	if (!fread(buffer, size, 1, fh)) {
-		ERROR("Can't read file %s", path);
+		QOI_ERR("Can't read file %s", path);
 	}
 	fclose(fh);
 
@@ -385,7 +385,7 @@ benchmark_result_t benchmark_image(const char *path) {
 
 	// Load the encoded PNG, encoded QOI and raw pixels into memory
 	if(!stbi_info(path, &w, &h, &channels)) {
-		ERROR("Error decoding header %s", path);
+		QOI_ERR("Error decoding header %s", path);
 	}
 
 	if (channels != 3) {
@@ -402,7 +402,7 @@ benchmark_result_t benchmark_image(const char *path) {
 		}, &encoded_qoi_size);
 
 	if (!pixels || !encoded_qoi || !encoded_png) {
-		ERROR("Error encoding %s", path);
+		QOI_ERR("Error encoding %s", path);
 	}
 
 	// Verify QOI Output
@@ -411,7 +411,7 @@ benchmark_result_t benchmark_image(const char *path) {
 		qoi_desc dc;
 		void *pixels_qoi = qoi_decode(encoded_qoi, encoded_qoi_size, &dc, channels);
 		if (memcmp(pixels, pixels_qoi, w * h * channels) != 0) {
-			ERROR("QOI roundtrip pixel mismatch for %s", path);
+			QOI_ERR("QOI roundtrip pixel mismatch for %s", path);
 		}
 		free(pixels_qoi);
 	}
@@ -491,7 +491,7 @@ benchmark_result_t benchmark_image(const char *path) {
 void benchmark_directory(const char *path, benchmark_result_t *grand_total) {
 	DIR *dir = opendir(path);
 	if (!dir) {
-		ERROR("Couldn't open directory %s", path);
+		QOI_ERR("Couldn't open directory %s", path);
 	}
 
 	struct dirent *file;
@@ -587,12 +587,12 @@ int main(int argc, char **argv) {
 		else if (strcmp(argv[i], "--nodecode") == 0) { opt_nodecode = 1; }
 		else if (strcmp(argv[i], "--norecurse") == 0) { opt_norecurse = 1; }
 		else if (strcmp(argv[i], "--onlytotals") == 0) { opt_onlytotals = 1; }
-		else { ERROR("Unknown option %s", argv[i]); }
+		else { QOI_ERR("Unknown option %s", argv[i]); }
 	}
 
 	opt_runs = atoi(argv[1]);
 	if (opt_runs <=0) {
-		ERROR("Invalid number of runs %d", opt_runs);
+		QOI_ERR("Invalid number of runs %d", opt_runs);
 	}
 
 	benchmark_result_t grand_total = {0};
