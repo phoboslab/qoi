@@ -1,7 +1,8 @@
 CC ?= gcc
 CFLAGS_BENCH ?= -std=gnu99 -O3
-LFLAGS_BENCH ?= -lpng
+LFLAGS_BENCH ?= -lpng $(LDFLAGS)
 CFLAGS_CONV ?= -std=c99 -O3
+LFLAGS_CONV ?= $(LDFLAGS)
 
 TARGET_BENCH ?= qoibench
 TARGET_CONV ?= qoiconv
@@ -14,7 +15,7 @@ $(TARGET_BENCH):$(TARGET_BENCH).c qoi.h
 
 conv: $(TARGET_CONV)
 $(TARGET_CONV):$(TARGET_CONV).c qoi.h
-	$(CC) $(CFLAGS_CONV) $(CFLAGS) $(TARGET_CONV).c -o $(TARGET_CONV)
+	$(CC) $(CFLAGS_CONV) $(CFLAGS) $(TARGET_CONV).c -o $(TARGET_CONV) $(LFLAGS_CONV)
 
 .PHONY: clean
 clean:
