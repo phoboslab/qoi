@@ -149,7 +149,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 ## QOI Support in Other Software
 
 - [Amiga OS QOI datatype](https://github.com/dgaw/qoi-datatype) - adds support for decoding QOI images to the Amiga operating system.
-- [SerenityOS](https://github.com/SerenityOS/serenity) - supports decoding QOI system wide through a custom [cpp implementation in LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/QOILoader.h)
+- [SerenityOS](https://github.com/SerenityOS/serenity) - supports decoding QOI system wide through a custom [cpp implementation in LibGfx](https://github.com/SerenityOS/serenity/blob/master/Userland/Libraries/LibGfx/ImageFormats/QOILoader.h)
 - [Raylib](https://github.com/raysan5/raylib) - supports decoding and encoding QOI textures through its [rtextures module](https://github.com/raysan5/raylib/blob/master/src/rtextures.c)
 - [Rebol3](https://github.com/Oldes/Rebol3/issues/39) - supports decoding and encoding QOI using a native codec
 - [c-ray](https://github.com/vkoskiv/c-ray) - supports QOI natively
