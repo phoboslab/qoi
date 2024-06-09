@@ -278,6 +278,14 @@ The returned qoi data should be free()d after use. */
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
 
 
+/* Check if a byte array contains the QOI magic header bytes.
+
+The function either returns 0 on failure (invalid parameters or magic
+header not detected) or 1 on success. */
+
+int qoi_detect_header_magic(const void *data, int size);
+
+
 /* Decode a QOI image from memory.
 
 The function either returns NULL on failure (invalid parameters or malloc
@@ -485,6 +493,19 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	return bytes;
 }
 
+int qoi_detect_header_magic(const void *data, int size) {
+	int p = 0;
+
+	if (
+		data == NULL ||
+		size < QOI_HEADER_SIZE + (int)sizeof(qoi_padding)
+	) {
+		return 0;
+	}
+
+	return qoi_read_32((const unsigned char *)data, &p) == QOI_MAGIC ? 1 : 0;
+}
+
 void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	const unsigned char *bytes;
 	unsigned int header_magic;
@@ -580,7 +601,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		pixels[px_pos + 0] = px.rgba.r;
 		pixels[px_pos + 1] = px.rgba.g;
 		pixels[px_pos + 2] = px.rgba.b;
-		
+
 		if (channels == 4) {
 			pixels[px_pos + 3] = px.rgba.a;
 		}
