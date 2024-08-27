@@ -145,6 +145,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [SixLabors/ImageSharp](https://github.com/SixLabors/ImageSharp) - C# image proccesing library
 - [zertovitch/gid](https://github.com/zertovitch/gid) - Ada
 - [nazrin/lil](https://codeberg.org/nazrin/lil) - Lua image library
+- [Hema2-official/qoi-c3](https://github.com/Hema2-official/qoi-c3) - C3
 
 ## QOI Support in Other Software
 
