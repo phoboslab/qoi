@@ -170,6 +170,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Swingland](https://git.sr.ht/~phlash/swingland) - supports QOI decoding/loading via the `ImageIO` API of this Java Swing reimplemenation for Wayland
 - [Imagine](https://www.nyam.pe.kr/dev/imagine/) - supports decoding and encoding QOI images since 1.3.9
 - [Uiua](https://uiua.org) - supports decoding and encoding QOI images since 0.8.0
+- [Google Earth Pro](https://www.google.com/intl/en_uk/earth/about/versions/#download-pro) - supports Movie Maker export as sequence of QOI images since 7.3.6
 
 ## Packages
 
