@@ -147,6 +147,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [nazrin/lil](https://codeberg.org/nazrin/lil) - Lua image library
 - [Hema2-official/qoi-c3](https://github.com/Hema2-official/qoi-c3) - C3
 - [kwon-young/qoi-prolog](https://github.com/kwon-young/qoi-prolog) - Prolog
+- [google/wuffs](https://github.com/google/wuffs) - Wuffs
 
 ## QOI Support in Other Software
 
