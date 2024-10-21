@@ -12,9 +12,13 @@ More info at https://qoiformat.org
 
 ## Why?
 
-Compared to stb_image and stb_image_write QOI offers 20x-50x faster encoding,
-3x-4x faster decoding and 20% better compression. It's also stupidly simple and
-fits in about 300 lines of C.
+QOI offers sweet-spot of compression ratio and throughput for lossless 
+image encoding. QOI's compression is roughly comparable to PNG (usually worse than 
+[libPNG](https://github.com/pnggroup/libpng), but better than [stb_image_write.h](https://github.com/nothings/stb/blob/master/stb_image_write.h)), while throughput is a lot higher.
+
+Benchmark results on a few thousand images can be found here: https://qoiformat.org/benchmark/
+
+The QOI format is also extremely simple, which helps a lot when porting to other languages.
 
 
 ## Example Usage
