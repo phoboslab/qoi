@@ -255,7 +255,7 @@ number of channels (3 = RGB, 4 = RGBA) and the colorspace.
 The function returns 0 on failure (invalid parameters, or fopen or malloc
 failed) or the number of bytes written on success. */
 
-int qoi_write(const char *filename, const void *data, const qoi_desc *desc);
+int qoi_write(const char *filename, const void *data, const qoi_desc *desc, const int num_threads);
 
 
 /* Read and decode a QOI image from the file system. If channels is 0, the
@@ -281,7 +281,7 @@ is set to the size in bytes of the encoded data.
 
 The returned qoi data should be free()d after use. */
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int num_threads);
 
 
 /* Decode a QOI image from memory.
@@ -362,7 +362,7 @@ static unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
     return a << 24 | b << 16 | c << 8 | d;
 }
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int num_threads) {
     int i, max_size, run, channels, chunk_size;
     unsigned char *bytes;
     const unsigned char *pixels;
@@ -394,7 +394,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 
     pixels = (const unsigned char *)data;
     int px_len = desc->width * desc->height * desc->channels;
-    int num_threads = 2; //Определение числа потоков!!!
+    // int num_threads = 16; //Определение числа потоков!!!
     // int num_threads = omp_get_max_threads(); //Определение числа потоков!!!
     printf("number of threads = %d\n", num_threads);
     chunk_size = px_len / num_threads;
@@ -617,7 +617,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 
 #include <stdio.h>
 
-int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
+int qoi_write(const char *filename, const void *data, const qoi_desc *desc, const int num_threads) {
     FILE *f = fopen(filename, "wb");
     int size, err;
     void *encoded;
@@ -626,7 +626,7 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc) {
         return 0;
     }
 
-    encoded = qoi_encode(data, desc, &size);
+    encoded = qoi_encode(data, desc, &size, num_threads);
     if (!encoded) {
         fclose(f);
         return 0;

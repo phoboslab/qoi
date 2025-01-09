@@ -27,7 +27,7 @@ Compile with:
 #define QOI_IMPLEMENTATION
 #include "qoi.h"
 
-
+#define NUM_THREADS 1
 
 
 // -----------------------------------------------------------------------------
@@ -399,7 +399,7 @@ benchmark_result_t benchmark_image(const char *path) {
 			.height = h, 
 			.channels = channels,
 			.colorspace = QOI_SRGB
-		}, &encoded_qoi_size);
+		}, &encoded_qoi_size, NUM_THREADS);
 
 	if (!pixels || !encoded_qoi || !encoded_png) {
 		ERROR("Error encoding %s", path);
@@ -475,7 +475,7 @@ benchmark_result_t benchmark_image(const char *path) {
 				.height = h, 
 				.channels = channels,
 				.colorspace = QOI_SRGB
-			}, &enc_size);
+			}, &enc_size, NUM_THREADS);
 			res.libs[QOI].size = enc_size;
 			free(enc_p);
 		});

@@ -32,11 +32,11 @@ Compile with:
 #define STR_ENDS_WITH(S, E) (strcmp(S + strlen(S) - (sizeof(E)-1), E) == 0)
 
 int main(int argc, char **argv) {
-	if (argc < 3) {
-		puts("Usage: qoiconv <infile> <outfile>");
+	if (argc < 4) {
+		puts("Usage: qoiconv <infile> <outfile> <num_threads>");
 		puts("Examples:");
-		puts("  qoiconv input.png output.qoi");
-		puts("  qoiconv input.qoi output.png");
+		puts("  qoiconv input.png output.qoi 1");
+		puts("  qoiconv input.qoi output.png 16" );
 		exit(1);
 	}
 
@@ -68,17 +68,18 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 
+	int num_threads = atoi(argv[3]);
 	int encoded = 0;
 	if (STR_ENDS_WITH(argv[2], ".png")) {
 		encoded = stbi_write_png(argv[2], w, h, channels, pixels, 0);
 	}
 	else if (STR_ENDS_WITH(argv[2], ".qoi")) {
 		encoded = qoi_write(argv[2], pixels, &(qoi_desc){
-			.width = w,
-			.height = h, 
-			.channels = channels,
-			.colorspace = QOI_SRGB
-		});
+				.width = w,
+				.height = h, 
+				.channels = channels,
+				.colorspace = QOI_SRGB
+			}, num_threads);
 	}
 
 	if (!encoded) {
