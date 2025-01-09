@@ -1,8 +1,8 @@
 CC ?= gcc
-CFLAGS_BENCH ?= -std=gnu99 -O3
-LFLAGS_BENCH ?= -lpng $(LDFLAGS)
-CFLAGS_CONV ?= -std=c99 -O3
-LFLAGS_CONV ?= $(LDFLAGS)
+CFLAGS_BENCH ?= -std=gnu99 -O3 -fopenmp
+LFLAGS_BENCH ?= -lpng -fopenmp $(LDFLAGS)
+CFLAGS_CONV ?= -std=c99 -O3 -fopenmp
+LFLAGS_CONV ?= -fopenmp $(LDFLAGS)
 
 TARGET_BENCH ?= qoibench
 TARGET_CONV ?= qoiconv
