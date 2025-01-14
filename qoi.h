@@ -28,7 +28,7 @@ qoi_write("image_new.qoi", rgba_pixels, &(qoi_desc){
 	.height = 1080,
 	.channels = 4,
 	.colorspace = QOI_SRGB
-});
+},1);
 
 // Load and decode a QOI image from the file system into a 32bbp RGBA buffer.
 // The qoi_desc struct will be filled with the width, height, number of channels
@@ -246,6 +246,10 @@ typedef struct {
     unsigned char colorspace;
 } qoi_desc;
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define ERROR(...) printf("abort at line " TOSTRING(__LINE__) ": " __VA_ARGS__); printf("\n"); exit(1)
+
 #ifndef QOI_NO_STDIO
 
 /* Encode raw RGB or RGBA pixels into a QOI image and write it to the file
@@ -255,7 +259,7 @@ number of channels (3 = RGB, 4 = RGBA) and the colorspace.
 The function returns 0 on failure (invalid parameters, or fopen or malloc
 failed) or the number of bytes written on success. */
 
-int qoi_write(const char *filename, const void *data, const qoi_desc *desc, const int num_threads);
+int qoi_write(const char *filename, const void *data, const qoi_desc *desc, int num_threads);
 
 
 /* Read and decode a QOI image from the file system. If channels is 0, the
@@ -268,7 +272,7 @@ will be filled with the description from the file header.
 
 The returned pixel data should be free()d after use. */
 
-void *qoi_read(const char *filename, qoi_desc *desc, int channels);
+void *qoi_read(const char *filename, qoi_desc *desc, int channels, int num_threads);
 
 #endif /* QOI_NO_STDIO */
 
@@ -281,7 +285,7 @@ is set to the size in bytes of the encoded data.
 
 The returned qoi data should be free()d after use. */
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int num_threads);
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, int num_threads);
 
 
 /* Decode a QOI image from memory.
@@ -292,7 +296,7 @@ is filled with the description from the file header.
 
 The returned pixel data should be free()d after use. */
 
-void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
+void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels, int num_threads);
 
 
 #ifdef __cplusplus
@@ -309,13 +313,6 @@ Implementation */
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef QOI_MALLOC
-#define QOI_MALLOC(sz) malloc(sz)
-#define QOI_FREE(p)    free(p)
-#endif
-#ifndef QOI_ZEROARR
-#define QOI_ZEROARR(a) memset((a),0,sizeof(a))
-#endif
 
 #define QOI_OP_INDEX  0x00 /* 00xxxxxx */
 #define QOI_OP_DIFF   0x40 /* 01xxxxxx */
@@ -337,6 +334,9 @@ against anything larger than that, assuming the worst case with 5 bytes per
 pixel, rounded down to a nice clean value. 400 million pixels ought to be
 enough for anybody. */
 #define QOI_PIXELS_MAX ((unsigned int)400000000)
+
+#define STRICTNESS 0 //should we error out if multithread decoding is impossible
+
 
 typedef union {
     struct {
@@ -362,24 +362,24 @@ static unsigned int qoi_read_32(const unsigned char *bytes, int *p) {
     return a << 24 | b << 16 | c << 8 | d;
 }
 
-void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int num_threads) {
-    int i, max_size, run, channels, chunk_size;
+void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, int num_threads) {
+    int i, max_size, run;
     unsigned char *bytes;
     const unsigned char *pixels;
     qoi_rgba_t px, px_prev;
 
     if (
-        data == NULL || out_len == NULL || desc == NULL ||
-        desc->width == 0 || desc->height == 0 ||
-        desc->channels < 3 || desc->channels > 4 ||
-        desc->colorspace > 1 ||
-        desc->height >= QOI_PIXELS_MAX / desc->width
-    ) {
+            data == NULL || out_len == NULL || desc == NULL ||
+            desc->width == 0 || desc->height == 0 ||
+            desc->channels < 3 || desc->channels > 4 ||
+            desc->colorspace > 1 ||
+            desc->height >= QOI_PIXELS_MAX / desc->width
+            ) {
         return NULL;
     }
 
     max_size = desc->width * desc->height * (desc->channels + 1) + QOI_HEADER_SIZE + sizeof(qoi_padding);
-    bytes = (unsigned char *)QOI_MALLOC(max_size);
+    bytes = malloc(max_size);
     if (!bytes) {
         return NULL;
     }
@@ -392,41 +392,40 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int
     bytes[p++] = desc->channels;
     bytes[p++] = desc->colorspace;
 
-    pixels = (const unsigned char *)data;
-    int px_len = desc->width * desc->height * desc->channels;
-    // int num_threads = 16; //Определение числа потоков!!!
-    // int num_threads = omp_get_max_threads(); //Определение числа потоков!!!
-    printf("number of threads = %d\n", num_threads);
-    chunk_size = px_len / num_threads;
+    pixels = (const unsigned char *) data;
+    int px_len = desc->width * desc->height;
+    int chunk_size = px_len / num_threads;
 
     // Локальные массивы для параллельной обработки
     unsigned char *local_bytes[num_threads];
     int local_sizes[num_threads];
 
-#pragma omp parallel num_threads(num_threads) private(px, px_prev, run) shared(pixels, local_bytes, local_sizes, px_len, num_threads, max_size, desc) default(none)
+#pragma omp parallel num_threads(num_threads)private(px, px_prev, run) shared(pixels, local_bytes, local_sizes, px_len, num_threads, max_size, desc, chunk_size) default(none)
     {
         int tid = omp_get_thread_num();
-        long start = (long) tid * px_len / num_threads;
-        int end = (long) (tid + 1) * px_len / num_threads;
+        int start = tid * chunk_size * desc->channels;
+        int end = (tid == num_threads - 1) ? px_len * desc->channels : start + chunk_size * desc->channels;
 
         qoi_rgba_t local_index[64] = {0};
+        char local_index_in[64] = {0};
         if (tid == 0) {
             px_prev.rgba.r = 0;
             px_prev.rgba.g = 0;
             px_prev.rgba.b = 0;
             px_prev.rgba.a = 255;
         } else {
-            px.rgba.r = pixels[start - 1 + 0];
-            px.rgba.g = pixels[start - 1 + 1];
-            px.rgba.b = pixels[start - 1 + 2];
+            px_prev.rgba.r = pixels[start - desc->channels + 0];
+            px_prev.rgba.g = pixels[start - desc->channels + 1];
+            px_prev.rgba.b = pixels[start - desc->channels + 2];
+            px_prev.rgba.a = 255;
             if (desc->channels == 4) {
-                px.rgba.a = pixels[start - 1 + 3];
+                px_prev.rgba.a = pixels[start - desc->channels + 3];
             }
         }
-
+        px = px_prev;
 
         run = 0;
-        local_bytes[tid] = (unsigned char *)malloc(max_size);
+        local_bytes[tid] = (unsigned char *) malloc(max_size);
         int local_p = 0;
 
         for (int px_pos = start; px_pos < end; px_pos += desc->channels) {
@@ -436,7 +435,6 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int
             if (desc->channels == 4) {
                 px.rgba.a = pixels[px_pos + 3];
             }
-
             if (px.v == px_prev.v) {
                 run++;
                 if (run == 62 || px_pos == end - desc->channels) {
@@ -451,11 +449,11 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int
 
                 int index_pos = QOI_COLOR_HASH(px) % 64;
 
-                if (local_index[index_pos].v == px.v) {
+                if (local_index[index_pos].v == px.v && local_index_in[index_pos]) {
                     local_bytes[tid][local_p++] = QOI_OP_INDEX | index_pos;
                 } else {
                     local_index[index_pos] = px;
-
+                    local_index_in[index_pos] = 1;
                     if (px.rgba.a == px_prev.rgba.a) {
                         signed char vr = px.rgba.r - px_prev.rgba.r;
                         signed char vg = px.rgba.g - px_prev.rgba.g;
@@ -465,16 +463,16 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int
                         signed char vg_b = vb - vg;
 
                         if (
-                            vr > -3 && vr < 2 &&
-                            vg > -3 && vg < 2 &&
-                            vb > -3 && vb < 2
-                        ) {
+                                vr > -3 && vr < 2 &&
+                                vg > -3 && vg < 2 &&
+                                vb > -3 && vb < 2
+                                ) {
                             local_bytes[tid][local_p++] = QOI_OP_DIFF | (vr + 2) << 4 | (vg + 2) << 2 | (vb + 2);
                         } else if (
-                            vg_r > -9 && vg_r < 8 &&
-                            vg > -33 && vg < 32 &&
-                            vg_b > -9 && vg_b < 8
-                        ) {
+                                vg_r > -9 && vg_r < 8 &&
+                                vg > -33 && vg < 32 &&
+                                vg_b > -9 && vg_b < 8
+                                ) {
                             local_bytes[tid][local_p++] = QOI_OP_LUMA | (vg + 32);
                             local_bytes[tid][local_p++] = (vg_r + 8) << 4 | (vg_b + 8);
                         } else {
@@ -514,14 +512,13 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len, const int
     return bytes;
 }
 
-
-void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
+void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels, int num_threads) {
     const unsigned char *bytes;
     unsigned int header_magic;
     unsigned char *pixels;
-    qoi_rgba_t index[64];
+    qoi_rgba_t index[64] = {0};
     qoi_rgba_t px;
-    int px_len, chunks_len, px_pos;
+    int px_len, chunks_len, px_pos = 0;
     int p = 0, run = 0;
 
     if (
@@ -555,69 +552,172 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
     }
 
     px_len = desc->width * desc->height * channels;
-    pixels = (unsigned char *) QOI_MALLOC(px_len);
+    pixels = malloc(px_len);
     if (!pixels) {
         return NULL;
     }
 
-    QOI_ZEROARR(index);
-    px.rgba.r = 0;
-    px.rgba.g = 0;
-    px.rgba.b = 0;
-    px.rgba.a = 255;
-
     chunks_len = size - (int) sizeof(qoi_padding);
-    for (px_pos = 0; px_pos < px_len; px_pos += channels) {
-        if (run > 0) {
-            run--;
-        } else if (p < chunks_len) {
-            int b1 = bytes[p++];
+    if (num_threads == 1) {
+        px.rgba.r = 0;
+        px.rgba.g = 0;
+        px.rgba.b = 0;
+        px.rgba.a = 255;
+        for (px_pos = 0; px_pos < px_len; px_pos += channels) {
+            if (run > 0) {
+                run--;
+            } else if (p < chunks_len) {
+                int b1 = bytes[p++];
 
+                if (b1 == QOI_OP_RGB) {
+                    px.rgba.r = bytes[p++];
+                    px.rgba.g = bytes[p++];
+                    px.rgba.b = bytes[p++];
+                } else if (b1 == QOI_OP_RGBA) {
+                    px.rgba.r = bytes[p++];
+                    px.rgba.g = bytes[p++];
+                    px.rgba.b = bytes[p++];
+                    px.rgba.a = bytes[p++];
+                } else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX) {
+                    px = index[b1];
+                } else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF) {
+                    px.rgba.r += ((b1 >> 4) & 0x03) - 2;
+                    px.rgba.g += ((b1 >> 2) & 0x03) - 2;
+                    px.rgba.b += (b1 & 0x03) - 2;
+                } else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA) {
+                    int b2 = bytes[p++];
+                    int vg = (b1 & 0x3f) - 32;
+                    px.rgba.r += vg - 8 + ((b2 >> 4) & 0x0f);
+                    px.rgba.g += vg;
+                    px.rgba.b += vg - 8 + (b2 & 0x0f);
+                } else if ((b1 & QOI_MASK_2) == QOI_OP_RUN) {
+                    run = (b1 & 0x3f);
+                }
+                index[QOI_COLOR_HASH(px) % 64] = px;
+            }
+
+            pixels[px_pos + 0] = px.rgba.r;
+            pixels[px_pos + 1] = px.rgba.g;
+            pixels[px_pos + 2] = px.rgba.b;
+
+            if (channels == 4) {
+                pixels[px_pos + 3] = px.rgba.a;
+            }
+        }
+
+        return pixels;
+    } else {
+        int dist = px_len / num_threads * 0.95;
+//        int *known_px = malloc(((int) px_len / dist + 10) * sizeof(int));
+        int *known_px = malloc(chunks_len * sizeof(int));
+        int known_px_cnt = 1;
+        known_px[0] = p++;
+        px_pos = 0;
+        int last = 0;
+        while (p < chunks_len - 1) {
+            int b1 = bytes[p++];
             if (b1 == QOI_OP_RGB) {
-                px.rgba.r = bytes[p++];
-                px.rgba.g = bytes[p++];
-                px.rgba.b = bytes[p++];
+                if (px_pos - last > dist) {
+                    known_px[known_px_cnt++] = p - 1;
+                    last = px_pos;
+                }
+                p += 3;
             } else if (b1 == QOI_OP_RGBA) {
-                px.rgba.r = bytes[p++];
-                px.rgba.g = bytes[p++];
-                px.rgba.b = bytes[p++];
-                px.rgba.a = bytes[p++];
-            } else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX) {
-                px = index[b1];
-            } else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF) {
-                px.rgba.r += ((b1 >> 4) & 0x03) - 2;
-                px.rgba.g += ((b1 >> 2) & 0x03) - 2;
-                px.rgba.b += (b1 & 0x03) - 2;
+                if (px_pos - last > dist) {
+                    known_px[known_px_cnt++] = p - 1;
+                    last = px_pos;
+                }
+                p += 4;
             } else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA) {
-                int b2 = bytes[p++];
-                int vg = (b1 & 0x3f) - 32;
-                px.rgba.r += vg - 8 + ((b2 >> 4) & 0x0f);
-                px.rgba.g += vg;
-                px.rgba.b += vg - 8 + (b2 & 0x0f);
+                p++;
             } else if ((b1 & QOI_MASK_2) == QOI_OP_RUN) {
                 run = (b1 & 0x3f);
             }
-
-            index[QOI_COLOR_HASH(px) % 64] = px;
+            run = (run == 0) ? 1 : run + 1;
+            px_pos += channels * run;
+            run = 0;
         }
+        known_px[known_px_cnt++] = chunks_len;
+        known_px = realloc(known_px, known_px_cnt * sizeof(int));
+        unsigned char *local_pixels[known_px_cnt - 1];
+        int local_sizes[known_px_cnt - 1];
+#pragma omp parallel num_threads(num_threads) private(run, px_pos, px, p) shared(local_pixels, local_sizes, known_px, known_px_cnt, bytes, px_len, channels) default(none)
+        {
 
-        pixels[px_pos + 0] = px.rgba.r;
-        pixels[px_pos + 1] = px.rgba.g;
-        pixels[px_pos + 2] = px.rgba.b;
+#pragma omp for schedule(guided)
+            for (int i = 0; i < known_px_cnt - 1; i++) {
+                px.rgba.r = 0;
+                px.rgba.g = 0;
+                px.rgba.b = 0;
+                px.rgba.a = 255;
+                run = 0;
+                qoi_rgba_t local_index[64] = {0};
+                char local_index_in[64] = {0};
+                px_pos = 0;
+                local_pixels[i] = malloc(px_len);
+                p = known_px[i];
+                while (p < known_px[i + 1]) {
+                    int b1 = bytes[p++];
+                    if (b1 == QOI_OP_RGB) {
+                        px.rgba.r = bytes[p++];
+                        px.rgba.g = bytes[p++];
+                        px.rgba.b = bytes[p++];
+                    } else if (b1 == QOI_OP_RGBA) {
+                        px.rgba.r = bytes[p++];
+                        px.rgba.g = bytes[p++];
+                        px.rgba.b = bytes[p++];
+                        px.rgba.a = bytes[p++];
+                    } else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX) {
+                        if (!local_index_in[b1] && STRICTNESS) {
+                            ERROR("Decoding is impossible in multithread mode");
+                        }
+                        px = local_index[b1];
+                    } else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF) {
+                        px.rgba.r += ((b1 >> 4) & 0x03) - 2;
+                        px.rgba.g += ((b1 >> 2) & 0x03) - 2;
+                        px.rgba.b += (b1 & 0x03) - 2;
+                    } else if ((b1 & QOI_MASK_2) == QOI_OP_LUMA) {
+                        int b2 = bytes[p++];
+                        int vg = (b1 & 0x3f) - 32;
+                        px.rgba.r += vg - 8 + ((b2 >> 4) & 0x0f);
+                        px.rgba.g += vg;
+                        px.rgba.b += vg - 8 + (b2 & 0x0f);
+                    } else if ((b1 & QOI_MASK_2) == QOI_OP_RUN) {
+                        run = (b1 & 0x3f);
+                    }
+                    int index_pos = QOI_COLOR_HASH(px) % 64;
+                    local_index[index_pos] = px;
+                    local_index_in[index_pos] = 1;
+                    run = (run == 0) ? 1 : run + 1;
+                    while (run-- > 0) {
+                        local_pixels[i][px_pos++] = px.rgba.r;
+                        local_pixels[i][px_pos++] = px.rgba.g;
+                        local_pixels[i][px_pos++] = px.rgba.b;
 
-        if (channels == 4) {
-            pixels[px_pos + 3] = px.rgba.a;
+                        if (channels == 4) {
+                            local_pixels[i][px_pos++] = px.rgba.a;
+                        }
+                    }
+                    run = 0;
+                }
+                local_sizes[i] = px_pos;
+            }
         }
+        p = 0;
+        for (int i = 0; i < known_px_cnt - 1; i++) {
+            memcpy(&pixels[p], local_pixels[i], local_sizes[i]);
+            p += local_sizes[i];
+            free(local_pixels[i]);
+        }
+        return pixels;
     }
-
-    return pixels;
 }
 
 #ifndef QOI_NO_STDIO
 
 #include <stdio.h>
 
-int qoi_write(const char *filename, const void *data, const qoi_desc *desc, const int num_threads) {
+int qoi_write(const char *filename, const void *data, const qoi_desc *desc, int num_threads) {
     FILE *f = fopen(filename, "wb");
     int size, err;
     void *encoded;
@@ -637,11 +737,11 @@ int qoi_write(const char *filename, const void *data, const qoi_desc *desc, cons
     err = ferror(f);
     fclose(f);
 
-    QOI_FREE(encoded);
+    free(encoded);
     return err ? 0 : size;
 }
 
-void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
+void *qoi_read(const char *filename, qoi_desc *desc, int channels, int num_threads) {
     FILE *f = fopen(filename, "rb");
     int size, bytes_read;
     void *pixels, *data;
@@ -657,7 +757,7 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
         return NULL;
     }
 
-    data = QOI_MALLOC(size);
+    data = malloc(size);
     if (!data) {
         fclose(f);
         return NULL;
@@ -665,8 +765,8 @@ void *qoi_read(const char *filename, qoi_desc *desc, int channels) {
 
     bytes_read = fread(data, 1, size, f);
     fclose(f);
-    pixels = (bytes_read != size) ? NULL : qoi_decode(data, bytes_read, desc, channels);
-    QOI_FREE(data);
+    pixels = (bytes_read != size) ? NULL : qoi_decode(data, bytes_read, desc, channels, num_threads);
+    free(data);
     return pixels;
 }
 

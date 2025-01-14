@@ -1,4 +1,6 @@
 images/
+old/
+dev*
 # stb_image.h
 # stb_image_write.h
 qoibench
