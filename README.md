@@ -72,7 +72,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 ## Tools
 
 - [floooh/qoiview](https://github.com/floooh/qoiview) - native QOI viewer
-- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu/releases) - QOI Plugin installer for Windows Explorer, Finder, GNOME, GIMP, Paint.NET and XnView
+- [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu/releases) - QOI Plugin installer for Windows Explorer, Finder, GNOME, GIMP 2, Paint.NET and XnView
 - [iOrange/QoiFileTypeNet](https://github.com/iOrange/QoiFileTypeNet/releases) - QOI Plugin for Paint.NET
 - [iOrange/QOIThumbnailProvider](https://github.com/iOrange/QOIThumbnailProvider) - Add thumbnails for QOI images in Windows Explorer
 - [Tom94/tev](https://github.com/Tom94/tev) - another native QOI viewer (allows pixel peeping and comparison with other image formats)
@@ -177,6 +177,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Imagine](https://www.nyam.pe.kr/dev/imagine/) - supports decoding and encoding QOI images since 1.3.9
 - [Uiua](https://uiua.org) - supports decoding and encoding QOI images since 0.8.0
 - [Google Earth Pro](https://www.google.com/intl/en_uk/earth/about/versions/#download-pro) - supports Movie Maker export as sequence of QOI images since 7.3.6
+- [GIMP](https://www.gimp.org) - supports decoding and encoding QOI images since 3.0
 
 ## Packages
 
