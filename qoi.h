@@ -115,9 +115,6 @@ The possible chunks are:
 2-bit tag b00
 6-bit index into the color index array: 0..63
 
-A valid encoder must not issue 2 or more consecutive QOI_OP_INDEX chunks to the
-same index. QOI_OP_RUN should be used instead.
-
 
 .- QOI_OP_DIFF -----------.
 |         Byte[0]         |
@@ -178,6 +175,10 @@ The run-length is stored with a bias of -1. Note that the run-lengths 63 and 64
 (b111110 and b111111) are illegal as they are occupied by the QOI_OP_RGB and
 QOI_OP_RGBA tags.
 
+A valid encoder must not issue two or more consecutive QOI_OP_RUN chunks unless
+the run length in all chunks but the last is 62. Decoders are not required to
+check this constraint.
+
 
 .- QOI_OP_RGB ------------------------------------------.
 |         Byte[0]         | Byte[1] | Byte[2] | Byte[3] |
@@ -204,6 +205,19 @@ The alpha value remains unchanged from the previous pixel.
 8-bit green channel value
 8-bit  blue channel value
 8-bit alpha channel value
+
+A valid encoder must observe the chunk type priority order; if the next chunk to
+be emitted can be of more than one type, the chunk type must be the one of the
+higher priority. The chunk priorities, from highest to lowest, are:
+
+1. QOI_OP_RUN
+2. QOI_OP_INDEX
+3. QOI_OP_DIFF
+4. QOI_OP_LUMA
+5. QOI_OP_RGB
+6. QOI_OP_RGBA
+
+Decoders are not required to check this constraint.
 
 */
 
