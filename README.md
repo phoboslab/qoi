@@ -152,6 +152,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Hema2-official/qoi-c3](https://github.com/Hema2-official/qoi-c3) - C3
 - [kwon-young/qoi-prolog](https://github.com/kwon-young/qoi-prolog) - Prolog
 - [google/wuffs](https://github.com/google/wuffs) - Wuffs
+- [alex-s168/uiua-qoi](https://github.com/alex-s168/uiua-qoi) - Uiua
 
 ## QOI Support in Other Software
 
