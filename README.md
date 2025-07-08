@@ -153,6 +153,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [kwon-young/qoi-prolog](https://github.com/kwon-young/qoi-prolog) - Prolog
 - [google/wuffs](https://github.com/google/wuffs) - Wuffs
 - [dokutan/qoi-bf](https://github.com/dokutan/qoi-bf) - Brainfuck
+- [alex-s168/uiua-qoi](https://github.com/alex-s168/uiua-qoi) - Uiua
 
 ## QOI Support in Other Software
 
@@ -185,5 +186,6 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [AUR](https://aur.archlinux.org/pkgbase/qoi-git/) - system-wide qoi.h, qoiconv and qoibench install as split packages.
 - [Debian](https://packages.debian.org/bookworm/source/qoi) - packages for binaries and qoi.h
 - [Ubuntu](https://launchpad.net/ubuntu/+source/qoi) - packages for binaries and qoi.h
+- [Fedora](https://packages.fedoraproject.org/pkgs/qoi) - packages for binaries and qoi.h
 
 Packages for other systems [tracked at Repology](https://repology.org/project/qoi/versions).
