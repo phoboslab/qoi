@@ -155,6 +155,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [dokutan/qoi-bf](https://github.com/dokutan/qoi-bf) - Brainfuck
 - [alex-s168/uiua-qoi](https://github.com/alex-s168/uiua-qoi) - Uiua
 - [hchargois/qoi](https://github.com/hchargois/qoi) - Go
+- [coralpink/qoi.cr](https://codeberg.org/coralpink/qoi.cr) - Crystal
 
 ## QOI Support in Other Software
 
