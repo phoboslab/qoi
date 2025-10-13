@@ -10,6 +10,7 @@ TARGET_CONV ?= qoiconv
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 INCLUDEDIR ?= $(PREFIX)/include
+DATAROOTDIR ?= $(PREFIX)/share
 
 all: $(TARGET_BENCH) $(TARGET_CONV)
 
@@ -21,6 +22,11 @@ conv: $(TARGET_CONV)
 $(TARGET_CONV):$(TARGET_CONV).c qoi.h
 	$(CC) $(CFLAGS_CONV) $(CFLAGS) $(TARGET_CONV).c -o $(TARGET_CONV) $(LFLAGS_CONV)
 
+qoi.pc: qoi.pc.in
+	sed < qoi.pc.in > qoi.pc \
+		-e 's|@PREFIX@|$(PREFIX)|g' \
+		-e 's|@INCLUDEDIR@|$(INCLUDEDIR:$(PREFIX)%=$${prefix}%)|g'
+
 .PHONY: install
 install: install-tools install-header
 
@@ -30,8 +36,9 @@ install-tools: all
 	install -Dm 755 $(TARGET_BENCH) $(DESTDIR)$(BINDIR)/$(TARGET_BENCH)
 
 .PHONY: install-header
-install-header: qoi.h
+install-header: qoi.h qoi.pc
 	install -Dm 644 qoi.h $(DESTDIR)$(INCLUDEDIR)/qoi.h
+	install -Dm 644 qoi.pc $(DESTDIR)$(DATAROOTDIR)/pkgconfig/qoi.pc
 
 .PHONY: clean
 clean:
