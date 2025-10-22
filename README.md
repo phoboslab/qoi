@@ -125,6 +125,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [amstan/qoi-fpga](https://github.com/amstan/qoi-fpga) - FPGA: verilog
 - [musabkilic/qoi-decoder](https://github.com/musabkilic/qoi-decoder) - Python
 - [mathpn/py-qoi](https://github.com/mathpn/py-qoi) - Python
+- [Joshix/qoi-rs-python](https://codeberg.org/Joshix/qoi-rs-python/) - Python
 - [JohannesFriedrich/qoi4R](https://github.com/JohannesFriedrich/qoi4R) - R
 - [shraiwi/mini-qoi](https://github.com/shraiwi/mini-qoi) - C, streaming decoder
 - [10maurycy10/libqoi/](https://github.com/10maurycy10/libqoi/) - Rust
