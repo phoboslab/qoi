@@ -94,6 +94,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 	- [GUI version](https://github.com/LuisAlfredo92/Super-QOI-converter-GUI- "GUI version"): Available only for windows
 - [tacent view](https://github.com/bluescan/tacentview) - Image and texture viewer, supports QOI
 - [colemanrgb/qoi2spr](https://github.com/colemanrgb/qoi2spr) - A variety of applications for decoding and encoding of QOI images on [RISC OS](https://www.riscosopen.org/)
+- [Muppetsg2/UnrealQOI](https://github.com/Muppetsg2/UnrealQOI) - QOI Format Import/Export plugin for Unreal Engine 5
 
 ## Implementations & Bindings of QOI
 
@@ -158,6 +159,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [hchargois/qoi](https://github.com/hchargois/qoi) - Go
 - [coralpink/qoi.cr](https://codeberg.org/coralpink/qoi.cr) - Crystal
 - [Pivok7/zqoi](https://github.com/Pivok7/zqoi) - Zig
+- [Muppetsg2/koi](https://github.com/Muppetsg2/koi) - stb-like single-file, public domain (or MIT-licensed) image processing libraries for C/C++
 
 ## QOI Support in Other Software
 
