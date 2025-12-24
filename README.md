@@ -95,6 +95,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [tacent view](https://github.com/bluescan/tacentview) - Image and texture viewer, supports QOI
 - [colemanrgb/qoi2spr](https://github.com/colemanrgb/qoi2spr) - A variety of applications for decoding and encoding of QOI images on [RISC OS](https://www.riscosopen.org/)
 - [Muppetsg2/UnrealQOI](https://github.com/Muppetsg2/UnrealQOI) - QOI Format Import/Export plugin for Unreal Engine 5
+- [Mupceet/qoi-viewer](https://github.com/Mupceet/qoi-viewer) - QOI Viewer for Visual Studio Code
 
 ## Implementations & Bindings of QOI
 
