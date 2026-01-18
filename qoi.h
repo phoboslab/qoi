@@ -403,7 +403,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	px_end = px_len - desc->channels;
 	channels = desc->channels;
 
-	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
+	for (px_pos = 0; px_pos <= px_len - channels; px_pos += channels) {
 		px.rgba.r = pixels[px_pos + 0];
 		px.rgba.g = pixels[px_pos + 1];
 		px.rgba.b = pixels[px_pos + 2];
@@ -537,7 +537,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	px.rgba.a = 255;
 
 	chunks_len = size - (int)sizeof(qoi_padding);
-	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
+	for (px_pos = 0; px_pos <= px_len - channels; px_pos += channels) {
 		if (run > 0) {
 			run--;
 		}
