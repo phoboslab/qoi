@@ -76,6 +76,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [iOrange/QoiFileTypeNet](https://github.com/iOrange/QoiFileTypeNet/releases) - QOI Plugin for Paint.NET
 - [iOrange/QOIThumbnailProvider](https://github.com/iOrange/QOIThumbnailProvider) - Add thumbnails for QOI images in Windows Explorer
 - [Tom94/tev](https://github.com/Tom94/tev) - another native QOI viewer (allows pixel peeping and comparison with other image formats)
+- [wkjarosz/hdrview](https://github.com/wkjarosz/hdrview) - research-oriented HDR/LDR image viewer with QOI read/write support; runs natively or in-browser
 - [qoiconverterx](https://apps.apple.com/br/app/qoiconverterx/id1602159820) QOI <=> PNG converter available on the Mac App Store
 - [kaetemi/qoi-ma](https://github.com/kaetemi/qoi-max) - QOI Bitmap I/O Plugin for 3ds Max
 - [rtexviewer](https://raylibtech.itch.io/rtexviewer) - texture viewer, supports QOI
