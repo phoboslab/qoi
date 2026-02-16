@@ -188,6 +188,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Uiua](https://uiua.org) - supports decoding and encoding QOI images since 0.8.0
 - [Google Earth Pro](https://www.google.com/intl/en_uk/earth/about/versions/#download-pro) - supports Movie Maker export as sequence of QOI images since 7.3.6
 - [GIMP](https://www.gimp.org) - supports decoding and encoding QOI images since 3.0
+- [ObjFW](https://objfw.nil.im) - supports decoding and encoding QOI images since 1.5
 
 ## Packages
 
