@@ -1,0 +1,9 @@
+prefix=@PREFIX@
+includedir=@INCLUDEDIR@
+
+Name: qoi
+Description: The "Quite OK Image Format" for fast, lossless image compression
+Version: 0
+URL: https://qoiformat.org/
+License: MIT
+Cflags: -I${includedir}
