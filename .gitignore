@@ -3,3 +3,4 @@ stb_image.h
 stb_image_write.h
 qoibench
 qoiconv
+qoi.pc
