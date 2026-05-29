@@ -319,7 +319,12 @@ Implementation */
 
 #define QOI_MASK_2    0xc0 /* 11000000 */
 
-#define QOI_COLOR_HASH(C) (C.rgba.r*3 + C.rgba.g*5 + C.rgba.b*7 + C.rgba.a*11)
+/* Original hash: r*3 + g*5 + b*7 + a*11
+   Optimized with strength reduction: r*3 = (r<<1)+r, g*5 = (g<<2)+g, etc. */
+#define QOI_COLOR_HASH(C) (((C.rgba.r << 1) + C.rgba.r) + \
+                           ((C.rgba.g << 2) + C.rgba.g) + \
+                           ((C.rgba.b << 3) - C.rgba.b) + \
+                           ((C.rgba.a << 3) + (C.rgba.a << 1) + C.rgba.a))
 #define QOI_MAGIC \
 	(((unsigned int)'q') << 24 | ((unsigned int)'o') << 16 | \
 	 ((unsigned int)'i') <<  8 | ((unsigned int)'f'))
@@ -335,6 +340,39 @@ typedef union {
 	struct { unsigned char r, g, b, a; } rgba;
 	unsigned int v;
 } qoi_rgba_t;
+
+/* Enable fast unaligned 32-bit reads/writes on platforms that support it.
+   This works correctly on little-endian systems where the union layout matches memory.
+   Disable with -DQOI_FAST_UNALIGNED=0 if needed. */
+#ifndef QOI_FAST_UNALIGNED
+	#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		/* Compiler explicitly defines little-endian */
+		#define QOI_FAST_UNALIGNED 1
+	#elif defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(_M_IX86)
+		/* x86/x64 is always little-endian and supports unaligned access */
+		#define QOI_FAST_UNALIGNED 1
+	#elif defined(_WIN32) || defined(_WIN64)
+		/* Windows is typically little-endian (x86/x64/ARM64) */
+		#define QOI_FAST_UNALIGNED 1
+	#elif (defined(__ARMEL__) || defined(__AARCH64EL__)) && \
+	      (defined(__ARM_ARCH) && __ARM_ARCH >= 6 || defined(__aarch64__))
+		/* ARM little-endian with unaligned access support (ARMv6+) */
+		#define QOI_FAST_UNALIGNED 1
+	#else
+		/* Unknown or big-endian: use safe byte-by-byte operations */
+		#define QOI_FAST_UNALIGNED 0
+	#endif
+#endif
+
+/* Prefetch hint for better cache performance */
+#if defined(__GNUC__) || defined(__clang__)
+	#define QOI_PREFETCH(addr) __builtin_prefetch(addr, 0, 0)
+#elif defined(_MSC_VER)
+	#include <intrin.h>
+	#define QOI_PREFETCH(addr) _mm_prefetch((const char*)(addr), _MM_HINT_T0)
+#else
+	#define QOI_PREFETCH(addr) ((void)0)
+#endif
 
 static const unsigned char qoi_padding[8] = {0,0,0,0,0,0,0,1};
 
@@ -404,12 +442,26 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 	channels = desc->channels;
 
 	for (px_pos = 0; px_pos < px_len; px_pos += channels) {
-		px.rgba.r = pixels[px_pos + 0];
-		px.rgba.g = pixels[px_pos + 1];
-		px.rgba.b = pixels[px_pos + 2];
+		/* Prefetch next pixel data for better cache performance */
+		if (px_pos + channels * 16 < px_len) {
+			QOI_PREFETCH(pixels + px_pos + channels * 16);
+		}
 
 		if (channels == 4) {
+#if QOI_FAST_UNALIGNED
+			/* Use 32-bit load on platforms that support fast unaligned access */
+			px.v = *(unsigned int *)(pixels + px_pos);
+#else
+			px.rgba.r = pixels[px_pos + 0];
+			px.rgba.g = pixels[px_pos + 1];
+			px.rgba.b = pixels[px_pos + 2];
 			px.rgba.a = pixels[px_pos + 3];
+#endif
+		}
+		else {
+			px.rgba.r = pixels[px_pos + 0];
+			px.rgba.g = pixels[px_pos + 1];
+			px.rgba.b = pixels[px_pos + 2];
 		}
 
 		if (px.v == px_prev.v) {
@@ -427,7 +479,7 @@ void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len) {
 				run = 0;
 			}
 
-			index_pos = QOI_COLOR_HASH(px) & (64 - 1);
+			index_pos = QOI_COLOR_HASH(px) & 63;
 
 			if (index[index_pos].v == px.v) {
 				bytes[p++] = QOI_OP_INDEX | index_pos;
@@ -544,6 +596,8 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 		else if (p < chunks_len) {
 			int b1 = bytes[p++];
 
+			/* Check RGB/RGBA first as exact values before checking 2-bit tags,
+			   since both 0xFE and 0xFF start with bits 11 which matches RUN tag */
 			if (b1 == QOI_OP_RGB) {
 				px.rgba.r = bytes[p++];
 				px.rgba.g = bytes[p++];
@@ -556,7 +610,7 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 				px.rgba.a = bytes[p++];
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_OP_INDEX) {
-				px = index[b1];
+				px = index[b1 & 0x3f];
 			}
 			else if ((b1 & QOI_MASK_2) == QOI_OP_DIFF) {
 				px.rgba.r += ((b1 >> 4) & 0x03) - 2;
@@ -574,15 +628,24 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 				run = (b1 & 0x3f);
 			}
 
-			index[QOI_COLOR_HASH(px) & (64 - 1)] = px;
+			index[QOI_COLOR_HASH(px) & 63] = px;
 		}
 
-		pixels[px_pos + 0] = px.rgba.r;
-		pixels[px_pos + 1] = px.rgba.g;
-		pixels[px_pos + 2] = px.rgba.b;
-		
 		if (channels == 4) {
+#if QOI_FAST_UNALIGNED
+			/* Use 32-bit store on platforms that support fast unaligned access */
+			*(unsigned int *)(pixels + px_pos) = px.v;
+#else
+			pixels[px_pos + 0] = px.rgba.r;
+			pixels[px_pos + 1] = px.rgba.g;
+			pixels[px_pos + 2] = px.rgba.b;
 			pixels[px_pos + 3] = px.rgba.a;
+#endif
+		}
+		else {
+			pixels[px_pos + 0] = px.rgba.r;
+			pixels[px_pos + 1] = px.rgba.g;
+			pixels[px_pos + 2] = px.rgba.b;
 		}
 	}
 
