@@ -163,6 +163,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [coralpink/qoi.cr](https://codeberg.org/coralpink/qoi.cr) - Crystal
 - [Pivok7/zqoi](https://codeberg.org/Pivok/zqoi) - Zig
 - [Muppetsg2/koi](https://github.com/Muppetsg2/koi) - stb-like single-file, public domain (or MIT-licensed) image processing libraries for C/C++
+- [sorvi-platform/dekoodaaja](https://github.com/sorvi-platform/dekoodaaja) - Zig, decoder only
 
 ## QOI Support in Other Software
 
