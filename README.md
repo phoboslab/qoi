@@ -102,6 +102,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 ## Implementations & Bindings of QOI
 
 - [pfusik/qoi-fu](https://github.com/pfusik/qoi-fu) - Fusion, transpiling to C, C++, C#, D, Java, JavaScript, Python, Swift and TypeScript
+- [aplghl/qoi-asm](https://github.com/aplghl/qoi-asm) - C / x86-64 assembly, drop-in replacement for qoi.h, bit-for-bit identical, 1.07×–2.16× faster than gcc -O3, x86-64-v3, differential-tested
 - [kodonnell/qoi](https://github.com/kodonnell/qoi) - Python
 - [JaffaKetchup/dqoi](https://github.com/JaffaKetchup/dqoi) - Dart, with Flutter support
 - [Cr4xy/lua-qoi](https://github.com/Cr4xy/lua-qoi) - Lua
