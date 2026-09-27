@@ -163,6 +163,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [coralpink/qoi.cr](https://codeberg.org/coralpink/qoi.cr) - Crystal
 - [Pivok7/zqoi](https://codeberg.org/Pivok/zqoi) - Zig
 - [Muppetsg2/koi](https://github.com/Muppetsg2/koi) - stb-like single-file, public domain (or MIT-licensed) image processing libraries for C/C++
+- [aplghl/qoi-asm](https://github.com/aplghl/qoi-asm) - C / x86-64 assembly, faster drop-in replacement for qoi.h
 
 ## QOI Support in Other Software
 
