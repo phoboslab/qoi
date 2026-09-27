@@ -98,6 +98,7 @@ either, as this "reference implementation" tries to be as easy to read as possib
 - [Muppetsg2/UnrealQOI](https://github.com/Muppetsg2/UnrealQOI) - QOI Format Import/Export plugin for Unreal Engine 5
 - [microsoft/PowerToys](https://github.com/microsoft/PowerToys) - Adds QOI file preview and thumbnails support to Windows Explorer
 - [Mupceet/qoi-viewer](https://github.com/Mupceet/qoi-viewer) - QOI Viewer for Visual Studio Code
+- [zara6502/far-qoi-viewer](https://github.com/zara6502/far-qoi-viewer) - A Far Manager 3.x plugin that opens .qoi images in a native Windows window
 
 ## Implementations & Bindings of QOI
 
