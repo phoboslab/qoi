@@ -45,6 +45,7 @@ This library provides the following functions;
 - qoi_decode  -- decode the raw bytes of a QOI image from memory
 - qoi_write   -- encode and write a QOI file
 - qoi_encode  -- encode an rgba buffer into a QOI image in memory
+- qoi_free    -- free memory allocated from the above functions
 
 See the function declaration below for the signature and more information.
 
@@ -260,7 +261,7 @@ The function either returns NULL on failure (invalid data, or malloc or fopen
 failed) or a pointer to the decoded pixels. On success, the qoi_desc struct
 will be filled with the description from the file header.
 
-The returned pixel data should be free()d after use. */
+The returned pixel data should be qoi_free()d after use. */
 
 void *qoi_read(const char *filename, qoi_desc *desc, int channels);
 
@@ -273,7 +274,7 @@ The function either returns NULL on failure (invalid parameters or malloc
 failed) or a pointer to the encoded data on success. On success the out_len
 is set to the size in bytes of the encoded data.
 
-The returned qoi data should be free()d after use. */
+The returned qoi data should be qoi_free()d after use. */
 
 void *qoi_encode(const void *data, const qoi_desc *desc, int *out_len);
 
@@ -284,10 +285,15 @@ The function either returns NULL on failure (invalid parameters or malloc
 failed) or a pointer to the decoded pixels. On success, the qoi_desc struct
 is filled with the description from the file header.
 
-The returned pixel data should be free()d after use. */
+The returned pixel data should be qoi_free()d after use. */
 
 void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels);
 
+/* Free results from qoi_xxx functions. This fuction should be used when
+custom malloc/free are defined in the implementation. This keeps the memory
+allocation macros local to the implementation without requiring the macros
+to be defined everywhere. */
+void qoi_free(void *ptr);
 
 #ifdef __cplusplus
 }
@@ -587,6 +593,10 @@ void *qoi_decode(const void *data, int size, qoi_desc *desc, int channels) {
 	}
 
 	return pixels;
+}
+
+void qoi_free(void *ptr) {
+	QOI_FREE(ptr);
 }
 
 #ifndef QOI_NO_STDIO
